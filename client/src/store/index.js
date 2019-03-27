@@ -294,10 +294,10 @@ export default new Vuex.Store({
       state.additionalCompInfo.natureOfBussiness = value;
     },
     nwpta_ab (state, value) {
-      state.additionalCompInfo.nwpta_ab = value;
+      state.additionalCompInfo.nwpta.nwpta_ab = value;
     },
     nwpta_sk (state, value) {
-      state.additionalCompInfo.nwpta_sk = value;
+      state.additionalCompInfo.nwpta.nwpta_sk = value;
     },
     nr_status (state, value) {
       state.additionalCompInfo.nr_status = value;
@@ -573,14 +573,14 @@ export default new Vuex.Store({
       console.log('Setting nwpta data in state variables')
       // cycle through nwpta entries
       // - first clear existing nwpta data that may persist from previous NR
-      state.additionalCompInfo.nwpta_ab = {
+      state.additionalCompInfo.nwpta.nwpta_ab = {
         partnerJurisdictionTypeCd: null,
         partnerName: null,
         partnerNameDate: null,
         partnerNameNumber: null,
         partnerNameTypeCd: null,
       };
-      state.additionalCompInfo.nwpta_sk = {
+      state.additionalCompInfo.nwpta.nwpta_sk = {
         partnerJurisdictionTypeCd: null,
         partnerName: null,
         partnerNameDate: null,
@@ -598,8 +598,8 @@ export default new Vuex.Store({
             nwpta_date.getFullYear();
         }
 
-        if (record.partnerJurisdictionTypeCd == 'AB') state.additionalCompInfo.nwpta_ab = record;
-        if (record.partnerJurisdictionTypeCd == 'SK') state.additionalCompInfo.nwpta_sk = record;
+        if (record.partnerJurisdictionTypeCd == 'AB') state.additionalCompInfo.nwpta.nwpta_ab = record;
+        if (record.partnerJurisdictionTypeCd == 'SK') state.additionalCompInfo.nwpta.nwpta_sk = record;
       }
 
       // convert Expiry Date from timestamp to DD-MM-YYYY string for editing
@@ -708,8 +708,8 @@ export default new Vuex.Store({
 
       state.nrData.comments = state.internalComments
       state.nrData.nwpta = []
-      if (state.additionalCompInfo.nwpta_ab.partnerJurisdictionTypeCd !== null) state.nrData.nwpta.push(state.additionalCompInfo.nwpta_ab);
-      if (state.additionalCompInfo.nwpta_sk.partnerJurisdictionTypeCd !== null) state.nrData.nwpta.push(state.additionalCompInfo.nwpta_sk);
+      if (state.additionalCompInfo.nwpta.nwpta_ab.partnerJurisdictionTypeCd !== null) state.nrData.nwpta.push(state.additionalCompInfo.nwpta.nwpta_ab);
+      if (state.additionalCompInfo.nwpta.nwpta_sk.partnerJurisdictionTypeCd !== null) state.nrData.nwpta.push(state.additionalCompInfo.nwpta.nwpta_sk);
       state.nrData.state =  state.currentState
       state.nrData.previousStateCd = state.previousStateCd;
       state.nrData.userId = state.examiner
@@ -1924,10 +1924,10 @@ export default new Vuex.Store({
       return state.additionalCompInfo.natureOfBussiness
     },
     nwpta_ab(state) {
-      return state.additionalCompInfo.nwpta_ab
+      return state.additionalCompInfo.nwpta.nwpta_ab
     },
     nwpta_sk(state) {
-      return state.additionalCompInfo.nwpta_sk
+      return state.additionalCompInfo.nwpta.nwpta_sk
     },
     nr_status(state) {
       return state.additionalCompInfo.nr_status
