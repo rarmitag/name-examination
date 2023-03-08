@@ -1,1021 +1,1185 @@
 /* eslint-disable */
-import Vue from 'vue';
-import Vuelidate from 'vuelidate';
+import Vue from 'vue'
+import sinon from 'sinon'
+import RequestInfoHeader from '@/components/application/Examine/RequestInfoHeader'
+import store from '@/store'
+import axios from '@/axios-auth.js'
+import { sleep } from '@/utils/sleep'
 
-Vue.use(require('vue-shortkey'));
-Vue.use(Vuelidate);
+window.HTMLElement.prototype.scrollTo = function () { return null }
 
-import RequestInfoHeader from '@/components/application/Examine/RequestInfoHeader';
-import store from '@/store';
-import axios from '@/axios-auth.js';
-import sinon from 'sinon';
-
-describe('RequestInfoHeader.vue', () => {
-  let instance;
+describe('RequestInfoHeader', () => {
+  let instance
 
   beforeEach(() => {
-    sessionStorage.setItem('USERNAME', 'tester');
-    sessionStorage.setItem('USER_ROLES', ['names_approver']);
-    sessionStorage.setItem('AUTHORIZED', 'true');
+    sessionStorage.setItem('USERNAME', 'tester')
+    sessionStorage.setItem('USER_ROLES', ['names_approver'])
+    sessionStorage.setItem('AUTHORIZED', 'true')
 
-    const Constructor = Vue.extend(RequestInfoHeader);
-    instance = new Constructor({store: store});
+    const Constructor = Vue.extend(RequestInfoHeader)
+    instance = new Constructor({ store })
     instance.$store.state.myKeycloak = {}
-  });
+  })
 
-  describe('Initialization', () => {
-    let vm;
-    let sandbox;
+  describe('When an NR is loaded, the RequestInfoHeader Component...', () => {
+    let vm
+    let sandbox
 
     let click = function (id) {
-      console.log('ID: ', id)
-      let button = vm.$el.querySelector(id);
-      let window = button.ownerDocument.defaultView;
-      var click = new window.Event('click');
-      button.dispatchEvent(click);
-    };
-    beforeEach((done) => {
+      let button = vm.$el.querySelector(id)
+      let window = button.ownerDocument.defaultView
+      var click = new window.Event('click')
+      button.dispatchEvent(click)
+    }
 
-      sandbox = sinon.createSandbox();
+    beforeEach(async () => {
+      sandbox = sinon.createSandbox()
       sandbox.stub(axios, 'put').withArgs('/api/v1/requests/NR 2000948', sinon.match.any).returns(
         new Promise((resolve) => resolve({
           data:
             {
-              additionalInfo: "More info",
+              additionalInfo: 'More info',
               applicants:
                 {
-                  addrLine1: "940 Blanshard Street",
+                  addrLine1: '940 Blanshard Street',
                   addrLine2: null,
                   addrLine3: null,
-                  city: "Victoria",
+                  city: 'Victoria',
                   clientFirstName: null,
                   clientLastName: null,
-                  contact: "John Test",
-                  countryTypeCd: "CA",
+                  contact: 'John Test',
+                  countryTypeCd: 'CA',
                   declineNotificationInd: null,
-                  emailAddress: "testoutputs@gov.bc.ca",
+                  emailAddress: 'testoutputs@gov.bc.ca',
                   faxNumber: null,
-                  firstName: "John",
-                  lastName: "Test",
+                  firstName: 'John',
+                  lastName: 'Test',
                   middleName: null,
                   partyId: 1822,
-                  phoneNumber: "2505555555",
-                  postalCd: "V8V4K8",
-                  stateProvinceCd: "BC"
+                  phoneNumber: '2505555555',
+                  postalCd: 'V8V4K8',
+                  stateProvinceCd: 'BC',
                 },
               comments: [],
               consentFlag: null,
               corpNum: null,
               expirationDate: null,
-              furnished: "N",
+              furnished: 'N',
               id: 1822,
-              lastUpdate: "Thu, 18 Oct 2018 22:46:54 GMT",
+              lastUpdate: 'Thu, 18 Oct 2018 22:46:54 GMT',
               names: [
                 {
                   choice: 1,
                   comment: null,
-                  conflict1: "",
-                  conflict1_num: "",
-                  conflict2: "",
-                  conflict2_num: "",
-                  conflict3: "",
-                  conflict3_num: "",
+                  conflict1: '',
+                  conflict1_num: '',
+                  conflict2: '',
+                  conflict2_num: '',
+                  conflict3: '',
+                  conflict3_num: '',
                   consumptionDate: null,
-                  decision_text: "",
-                  name: "COLDSTREAM REFRIGERATION  HVAC SERVICES LIMITED",
-                  state: "NE"
-                }],
-              natureBusinessInfo: "Nature of business can be pretty long so this one is more realistic. It even contains " +
-              "spaces and punctuation.",
-              nrNum: "NR 2000948",
+                  decision_text: '',
+                  name: 'COLDSTREAM REFRIGERATION  HVAC SERVICES LIMITED',
+                  state: 'NE',
+                },
+              ],
+              natureBusinessInfo: 'Nature of business can be pretty long so this one is more realistic. It even contains ' +
+                'spaces and punctuation.',
+              nrNum: 'NR 2000948',
               nwpta: [],
               previousNr: null,
               previousRequestId: null,
               previousStateCd: null,
-              priorityCd: "Y",
-              requestTypeCd: "CR",
-              state: "INPROGRESS",
+              priorityCd: 'Y',
+              requestTypeCd: 'CR',
+              state: 'INPROGRESS',
               submitCount: 1,
-              submittedDate: "Wed, 17 Oct 2018 11:37:20 GMT",
-              submitter_userid: "",
-              userId: "tester",
-              xproJurisdiction: null
-            }
-        }))
-      );
+              submittedDate: 'Wed, 17 Oct 2018 11:37:20 GMT',
+              submitter_userid: '',
+              userId: 'tester',
+              xproJurisdiction: null,
+            },
+        })),
+      )
       sandbox.stub(axios, 'get').withArgs('/api/v1/requests/NR 2000948', sinon.match.any).returns(
         new Promise((resolve) => resolve({
           data:
             {
-              additionalInfo: "More info",
+              additionalInfo: 'More info',
               applicants:
                 {
-                  addrLine1: "940 Blanshard Street",
+                  addrLine1: '940 Blanshard Street',
                   addrLine2: null,
                   addrLine3: null,
-                  city: "Victoria",
+                  city: 'Victoria',
                   clientFirstName: null,
                   clientLastName: null,
-                  contact: "John Test",
-                  countryTypeCd: "CA",
+                  contact: 'John Test',
+                  countryTypeCd: 'CA',
                   declineNotificationInd: null,
-                  emailAddress: "testoutputs@gov.bc.ca",
+                  emailAddress: 'testoutputs@gov.bc.ca',
                   faxNumber: null,
-                  firstName: "John",
-                  lastName: "Test",
+                  firstName: 'John',
+                  lastName: 'Test',
                   middleName: null,
                   partyId: 1822,
-                  phoneNumber: "2505555555",
-                  postalCd: "V8V4K8",
-                  stateProvinceCd: "BC"
+                  phoneNumber: '2505555555',
+                  postalCd: 'V8V4K8',
+                  stateProvinceCd: 'BC',
                 },
               comments: [],
               consentFlag: null,
               corpNum: null,
               expirationDate: null,
-              furnished: "N",
+              furnished: 'N',
               id: 1822,
-              lastUpdate: "Thu, 18 Oct 2018 22:46:54 GMT",
+              lastUpdate: 'Thu, 18 Oct 2018 22:46:54 GMT',
               names: [
                 {
                   choice: 1,
                   comment: null,
-                  conflict1: "",
-                  conflict1_num: "",
-                  conflict2: "",
-                  conflict2_num: "",
-                  conflict3: "",
-                  conflict3_num: "",
+                  conflict1: '',
+                  conflict1_num: '',
+                  conflict2: '',
+                  conflict2_num: '',
+                  conflict3: '',
+                  conflict3_num: '',
                   consumptionDate: null,
-                  decision_text: "",
-                  name: "COLDSTREAM REFRIGERATION  HVAC SERVICES LIMITED",
-                  state: "NE"
-                }],
-              natureBusinessInfo: "Nature of business can be pretty long so this one is more realistic. It even contains " +
-              "spaces and punctuation.",
-              nrNum: "NR 2000948",
+                  decision_text: '',
+                  name: 'COLDSTREAM REFRIGERATION  HVAC SERVICES LIMITED',
+                  state: 'NE',
+                },
+              ],
+              natureBusinessInfo: 'Nature of business can be pretty long so this one is more realistic. It even contains ' +
+                'spaces and punctuation.',
+              nrNum: 'NR 2000948',
               nwpta: [],
               previousNr: null,
               previousRequestId: null,
               previousStateCd: null,
-              priorityCd: "Y",
-              requestTypeCd: "CR",
-              state: "INPROGRESS",
+              priorityCd: 'Y',
+              requestTypeCd: 'CR',
+              state: 'INPROGRESS',
               submitCount: 1,
-              submittedDate: "Wed, 17 Oct 2018 11:37:20 GMT",
-              submitter_userid: "",
-              userId: "tester",
-              xproJurisdiction: null
-            }
-        }))
-      );
-      vm = instance.$mount();
-      vm.$store.commit('setLoginValues');
-      vm.$store.commit('nrNumber', 'NR 2000948');
-      setTimeout(() => {
-        done();
-      }, 100)
-    });
+              submittedDate: 'Wed, 17 Oct 2018 11:37:20 GMT',
+              submitter_userid: '',
+              userId: 'tester',
+              xproJurisdiction: null,
+            },
+        })),
+      )
+      vm = instance.$mount()
+      vm.$store.commit('setLoginValues')
+      vm.$store.commit('nrNumber', 'NR 2000948')
+      await sleep(1000)
+    })
+
     afterEach(() => {
-      sandbox.restore();
-    });
+      sandbox.restore()
+    })
 
-    it('displays the NR loaded in the store', () => {
-      expect(vm.nrNumber).toEqual('NR 2000948');
-      expect(vm.$el.querySelector('div.nrNum').textContent).toEqual('NR 2000948');
-    });
+    it('Gets the NR # from the store and displays it', () => {
+      expect(vm.nrNumber).toEqual('NR 2000948')
+      expect(vm.$el.querySelector('#nrNumberDisplay').textContent).toEqual('NR 2000948')
+    })
 
-    it('displays the priority div when priority is set in store', () => {
-      expect(vm.priority).toBeTruthy();
-      expect(vm.$el.querySelector('div.priority')).toBeDefined();
-    });
+    it('Displays the Priority Indicator when the Priority Flag is set', () => {
+      expect(vm.priority).toBeTruthy()
+      expect(vm.$el.querySelector('#priorityStarIcon')).not.toEqual(null)
+    })
 
-    it('displays the correct state of the NR', () => {
-      expect(vm.nr_status).toEqual('INPROGRESS');
-      expect(vm.$el.querySelector('div.status').textContent.trim()).toEqual('Status: INPROGRESS');
-    });
+    it('Displays the Proper NR Status Text', () => {
+      expect(vm.nr_status).toEqual('INPROGRESS')
+      expect(vm.$el.querySelector('#nrStatusText').textContent.trim()).toEqual('INPROGRESS')
+    })
 
-    it('has the show/hide details button working properly', () => {
+    it('Has a Show/Hide Button that toggles properly', async () => {
       //TODO: tests for all fields that are hidden/shown in header
-      console.log('START details')
-      expect(vm.$el.querySelector('#comments-div')).toBeNull();
-      expect(vm.$el.querySelector('newpta')).toBeNull();
-      expect(vm.$el.querySelector('#nr-details-show-hide-details-button').textContent.trim()).toEqual('Show Details  (b)');
-      click('#nr-details-show-hide-details-button');
+      expect(vm.$el.querySelector('#show-details-graphic')).not.toBeNull()
+      expect(vm.$el.querySelector('#hide-details-graphic')).toBeNull()
 
-      setTimeout(() => {
-        expect(vm.$el.querySelector('#nr-details-show-hide-details-button').textContent.trim()).toEqual('Hide Details (b)');
-        expect(vm.$el.querySelector('newpta')).toBeDefined();
-        expect(vm.$el.querySelector('#comments-div')).toBeDefined();
-        expect(vm.$el.querySelector('#comments-div h3').textContent).toEqual('INTERNAL COMMENTS');
-        console.log('END details')
-      }, 10)
-    });
-  });
+      click('#nr-details-show-hide-details-button')
+      await vm.$nextTick()
 
-  describe('Testing Editing the NR in DRAFT (unexamined)', () => {
-    let vm;
-    let sandbox;
+      expect(vm.$el.querySelector('#show-details-graphic')).toBeNull()
+      expect(vm.$el.querySelector('#hide-details-graphic')).not.toBeNull()
+    })
+  })
 
-    let putCall, getCall, patchCall;
+  describe('When an unexamined draft NR is loaded', () => {
+    let vm
+    let sandbox
+
+    let putCall, getCall, patchCall
 
     let click = function (id) {
-      console.log('ID: ', id)
-      let button = vm.$el.querySelector(id);
-      let window = button.ownerDocument.defaultView;
-      var click = new window.Event('click');
-      button.dispatchEvent(click);
-    };
-    beforeEach((done) => {
+      let button = vm.$el.querySelector(id)
+      let window = button.ownerDocument.defaultView
+      var click = new window.Event('click')
+      button.dispatchEvent(click)
+    }
 
-      sandbox = sinon.createSandbox();
+    beforeEach(async () => {
+      sandbox = sinon.createSandbox()
       putCall = sandbox.stub(axios, 'put').withArgs('/api/v1/requests/NR 2000950', sinon.match.any).returns(
         new Promise((resolve) => resolve({
           data:
             {
-              additionalInfo: "More info",
+              additionalInfo: 'More info',
               applicants:
                 {
-                  addrLine1: "940 Blanshard Street",
+                  addrLine1: '940 Blanshard Street',
                   addrLine2: null,
                   addrLine3: null,
-                  city: "Victoria",
+                  city: 'Victoria',
                   clientFirstName: null,
                   clientLastName: null,
-                  contact: "John Test",
-                  countryTypeCd: "CA",
+                  contact: 'John Test',
+                  countryTypeCd: 'CA',
                   declineNotificationInd: null,
-                  emailAddress: "testoutputs@gov.bc.ca",
+                  emailAddress: 'testoutputs@gov.bc.ca',
                   faxNumber: null,
-                  firstName: "John",
-                  lastName: "Test",
+                  firstName: 'John',
+                  lastName: 'Test',
                   middleName: null,
                   partyId: 1822,
-                  phoneNumber: "2505555555",
-                  postalCd: "V8V4K8",
-                  stateProvinceCd: "BC"
+                  phoneNumber: '2505555555',
+                  postalCd: 'V8V4K8',
+                  stateProvinceCd: 'BC',
                 },
               comments: [],
               consentFlag: null,
               corpNum: null,
               expirationDate: null,
-              furnished: "N",
+              furnished: 'N',
               id: 1822,
-              lastUpdate: "Thu, 18 Oct 2018 22:46:54 GMT",
+              lastUpdate: 'Thu, 18 Oct 2018 22:46:54 GMT',
               names: [
                 {
                   choice: 1,
                   comment: null,
-                  conflict1: "",
-                  conflict1_num: "",
-                  conflict2: "",
-                  conflict2_num: "",
-                  conflict3: "",
-                  conflict3_num: "",
+                  conflict1: '',
+                  conflict1_num: '',
+                  conflict2: '',
+                  conflict2_num: '',
+                  conflict3: '',
+                  conflict3_num: '',
                   consumptionDate: null,
-                  decision_text: "",
-                  name: "COLDSTREAM REFRIGERATION  HVAC SERVICES LIMITED",
-                  state: "NE"
-                }],
-              natureBusinessInfo: "Nature of business can be pretty long so this one is more realistic. It even contains " +
-              "spaces and punctuation.",
-              nrNum: "NR 2000950",
+                  decision_text: '',
+                  name: 'COLDSTREAM REFRIGERATION  HVAC SERVICES LIMITED',
+                  state: 'NE',
+                },
+              ],
+              natureBusinessInfo: 'Nature of business can be pretty long so this one is more realistic. It even contains ' +
+                'spaces and punctuation.',
+              nrNum: 'NR 2000950',
               nwpta: [],
               previousNr: null,
               previousRequestId: null,
               previousStateCd: null,
-              priorityCd: "Y",
-              requestTypeCd: "CR",
-              state: "DRAFT",
+              priorityCd: 'Y',
+              requestTypeCd: 'CR',
+              state: 'DRAFT',
               submitCount: 1,
-              submittedDate: "Wed, 17 Oct 2018 11:37:20 GMT",
-              submitter_userid: "",
-              userId: "tester",
-              xproJurisdiction: null
-            }
-        }))
-      );
+              submittedDate: 'Wed, 17 Oct 2018 11:37:20 GMT',
+              submitter_userid: '',
+              userId: 'tester',
+              xproJurisdiction: null,
+            },
+        })),
+      )
       getCall = sandbox.stub(axios, 'get').withArgs('/api/v1/requests/NR 2000950', sinon.match.any).returns(
         new Promise((resolve) => resolve({
           data:
             {
-              additionalInfo: "More info",
+              additionalInfo: 'More info',
               applicants:
                 {
-                  addrLine1: "940 Blanshard Street",
+                  addrLine1: '940 Blanshard Street',
                   addrLine2: null,
                   addrLine3: null,
-                  city: "Victoria",
+                  city: 'Victoria',
                   clientFirstName: null,
                   clientLastName: null,
-                  contact: "John Test",
-                  countryTypeCd: "CA",
+                  contact: 'John Test',
+                  countryTypeCd: 'CA',
                   declineNotificationInd: null,
-                  emailAddress: "testoutputs@gov.bc.ca",
+                  emailAddress: 'testoutputs@gov.bc.ca',
                   faxNumber: null,
-                  firstName: "John",
-                  lastName: "Test",
+                  firstName: 'John',
+                  lastName: 'Test',
                   middleName: null,
                   partyId: 1822,
-                  phoneNumber: "2505555555",
-                  postalCd: "V8V4K8",
-                  stateProvinceCd: "BC"
+                  phoneNumber: '2505555555',
+                  postalCd: 'V8V4K8',
+                  stateProvinceCd: 'BC',
                 },
               comments: [],
               consentFlag: null,
               corpNum: null,
               expirationDate: null,
-              furnished: "N",
+              furnished: 'N',
               id: 1822,
-              lastUpdate: "Thu, 18 Oct 2018 22:46:54 GMT",
+              lastUpdate: 'Thu, 18 Oct 2018 22:46:54 GMT',
               names: [
                 {
                   choice: 1,
                   comment: null,
-                  conflict1: "",
-                  conflict1_num: "",
-                  conflict2: "",
-                  conflict2_num: "",
-                  conflict3: "",
-                  conflict3_num: "",
+                  conflict1: '',
+                  conflict1_num: '',
+                  conflict2: '',
+                  conflict2_num: '',
+                  conflict3: '',
+                  conflict3_num: '',
                   consumptionDate: null,
-                  decision_text: "",
-                  name: "COLDSTREAM REFRIGERATION  HVAC SERVICES LIMITED",
-                  state: "NE"
-                }],
-              natureBusinessInfo: "Nature of business can be pretty long so this one is more realistic. It even contains " +
-              "spaces and punctuation.",
-              nrNum: "NR 2000948",
+                  decision_text: '',
+                  name: 'COLDSTREAM REFRIGERATION  HVAC SERVICES LIMITED',
+                  state: 'NE',
+                },
+              ],
+              natureBusinessInfo: 'Nature of business can be pretty long so this one is more realistic. It even contains ' +
+                'spaces and punctuation.',
+              nrNum: 'NR 2000948',
               nwpta: [],
               previousNr: null,
               previousRequestId: null,
-              previousStateCd: "DRAFT",
-              priorityCd: "Y",
-              requestTypeCd: "CR",
-              state: "INPROGRESS",
+              previousStateCd: 'DRAFT',
+              priorityCd: 'Y',
+              requestTypeCd: 'CR',
+              state: 'INPROGRESS',
               submitCount: 1,
-              submittedDate: "Wed, 17 Oct 2018 11:37:20 GMT",
-              submitter_userid: "",
-              userId: "tester",
-              xproJurisdiction: null
-            }
-        }))
-      );
+              submittedDate: 'Wed, 17 Oct 2018 11:37:20 GMT',
+              submitter_userid: '',
+              userId: 'tester',
+              xproJurisdiction: null,
+            },
+        })),
+      )
       patchCall = sandbox.stub(axios, 'patch').withArgs('/api/v1/requests/NR 2000950', sinon.match.any).returns(
         new Promise((resolve) => resolve({
           data:
             {
-              message: "Request:NR 2000950 - patched"
-            }
-        }))
-      );
-      vm = instance.$mount();
-      vm.$store.commit('setLoginValues');
-      vm.$store.commit('nrNumber', 'NR 2000950');
-      setTimeout(() => {
-        done();
-      }, 100)
-    });
+              message: 'Request:NR 2000950 - patched',
+            },
+        })),
+      )
+      vm = instance.$mount()
+      vm.$store.commit('setLoginValues')
+      vm.$store.commit('nrNumber', 'NR 2000950')
+      await sleep(1000)
+    })
+
     afterEach(() => {
-      sandbox.restore();
-    });
+      sandbox.restore()
+    })
 
-    describe('cancel/save testing', () => {
+    describe('And in Edit Mode', () => {
+      beforeEach(async () => {
+        click('#nr-details-edit-button')
+        await sleep(1000)
+      })
 
-      beforeEach((done) => {
-        click('#nr-details-edit-button');
-        setTimeout(() => {
-          done();
-        }, 100)
-      });
-      afterEach((done) => {
-        setTimeout(() => {
-          done();
-        }, 100)
-      });
+      afterEach(async () => {
+        await sleep(100)
+      })
 
-      it('has the cancel button working properly', () => {
-        console.log('CANCEL')
-        click('#nr-details-cancel-button');
-        setTimeout(() => {
-          expect(vm.$el.querySelector('#nr-details-edit-button').textContent).toEqual('Edit');
-          expect(vm.$el.querySelector('#nr-details-save-button')).toBeNull();
-          expect(vm.$el.querySelector('#nr-details-cancel-button')).toBeNull();
+      it('RequestInfo Header has show/cancel buttons that toggle properly', async () => {
+        click('#nr-details-cancel-button')
+        await sleep(100)
 
-          // the PATCH should have been called to revert state to DRAFT
-          expect(patchCall.lastCall).not.toBeNull();
-          expect(patchCall.lastCall.args[1].state).toEqual('DRAFT');
-          expect(patchCall.lastCall.args[1].previousStateCd).toEqual(null);
+        expect(vm.$el.querySelector('#nr-details-save-button')).toEqual(null)
+        expect(vm.$el.querySelector('#nr-details-cancel-button')).toEqual(null)
+        expect(vm.$el.querySelector('#nr-details-edit-button')).not.toEqual(null)
 
-          console.log('END cancel')
-        }, 10);
-      });
+        // the PATCH should have been called to revert state to DRAFT
+        expect(patchCall.lastCall).not.toBeNull()
+        expect(patchCall.lastCall.args[1].state).toEqual('DRAFT')
+        expect(patchCall.lastCall.args[1].previousStateCd).toEqual(null)
+      })
 
-      it('has the save button working properly', () => {
-        console.log('START save')
+      it('Has a Save Edits button that works when clicked', async () => {
+        expect(vm.validate()).toBeTruthy()
+        expect(vm.$el.querySelector('#nr-details-save-button')).not.toBeNull()
 
-        expect(vm.validate()).toBeTruthy();
-        expect(vm.$el.querySelector('#nr-details-save-button').textContent).toEqual('Save');
-        click('#nr-details-save-button');
+        click('#nr-details-save-button')
+        await sleep(100)
 
-        setTimeout(() => {
-          expect(vm.$el.querySelector('#nr-details-edit-button').textContent).toEqual('Edit');
-          expect(vm.$el.querySelector('#nr-details-save-button')).toBeNull();
-          expect(vm.$el.querySelector('#nr-details-cancel-button')).toBeNull();
+        expect(vm.$el.querySelector('#nr-details-edit-button')).not.toBeNull()
+        expect(vm.$el.querySelector('#nr-details-save-button')).toBeNull()
+        expect(vm.$el.querySelector('#nr-details-cancel-button')).toBeNull()
 
-          // the PUT is called, saving state back to DRAFT
-          expect(putCall.lastCall).not.toBeNull();
-          expect(putCall.lastCall.args[1].state).toEqual('DRAFT');
-          expect(putCall.lastCall.args[1].previousStateCd).toEqual(null);
+        // the PUT is called, saving state back to DRAFT
+        expect(putCall.lastCall).not.toBeNull()
+        expect(putCall.lastCall.args[1].state).toEqual('DRAFT')
+        expect(putCall.lastCall.args[1].previousStateCd).toEqual(null)
+      })
+    })
+  })
 
-          console.log('finished');
-        });
-      });
+  describe('When an examiner loads an INPROGRESS NR that is their current NR', () => {
+    let vm
+    let sandbox
 
-    });
-  });
-  describe('Testing Editing the NR in INPROGRESS (my current NR)', () => {
-    let vm;
-    let sandbox;
-
-    let putCall, getCall, patchCall;
+    let putCall, getCall, patchCall
 
     let click = function (id) {
-      console.log('ID: ', id)
-      let button = vm.$el.querySelector(id);
-      let window = button.ownerDocument.defaultView;
-      var click = new window.Event('click');
-      button.dispatchEvent(click);
-    };
-    beforeEach((done) => {
+      let button = vm.$el.querySelector(id)
+      let window = button.ownerDocument.defaultView
+      var click = new window.Event('click')
+      button.dispatchEvent(click)
+    }
 
-      sandbox = sinon.createSandbox();
+    beforeEach(async () => {
+      sandbox = sinon.createSandbox()
       putCall = sandbox.stub(axios, 'put').withArgs('/api/v1/requests/NR 2000948', sinon.match.any).returns(
         new Promise((resolve) => resolve({
           data:
             {
-              additionalInfo: "More info",
+              additionalInfo: 'More info',
               applicants:
                 {
-                  addrLine1: "940 Blanshard Street",
+                  addrLine1: '940 Blanshard Street',
                   addrLine2: null,
                   addrLine3: null,
-                  city: "Victoria",
+                  city: 'Victoria',
                   clientFirstName: null,
                   clientLastName: null,
-                  contact: "John Test",
-                  countryTypeCd: "CA",
+                  contact: 'John Test',
+                  countryTypeCd: 'CA',
                   declineNotificationInd: null,
-                  emailAddress: "testoutputs@gov.bc.ca",
+                  emailAddress: 'testoutputs@gov.bc.ca',
                   faxNumber: null,
-                  firstName: "John",
-                  lastName: "Test",
+                  firstName: 'John',
+                  lastName: 'Test',
                   middleName: null,
                   partyId: 1822,
-                  phoneNumber: "2505555555",
-                  postalCd: "V8V4K8",
-                  stateProvinceCd: "BC"
+                  phoneNumber: '2505555555',
+                  postalCd: 'V8V4K8',
+                  stateProvinceCd: 'BC',
                 },
               comments: [],
               consentFlag: null,
               corpNum: null,
               expirationDate: null,
-              furnished: "N",
+              furnished: 'N',
               id: 1822,
-              lastUpdate: "Thu, 18 Oct 2018 22:46:54 GMT",
+              lastUpdate: 'Thu, 18 Oct 2018 22:46:54 GMT',
               names: [
                 {
                   choice: 1,
                   comment: null,
-                  conflict1: "",
-                  conflict1_num: "",
-                  conflict2: "",
-                  conflict2_num: "",
-                  conflict3: "",
-                  conflict3_num: "",
+                  conflict1: '',
+                  conflict1_num: '',
+                  conflict2: '',
+                  conflict2_num: '',
+                  conflict3: '',
+                  conflict3_num: '',
                   consumptionDate: null,
-                  decision_text: "",
-                  name: "COLDSTREAM REFRIGERATION  HVAC SERVICES LIMITED",
-                  state: "NE"
-                }],
-              natureBusinessInfo: "Nature of business can be pretty long so this one is more realistic. It even contains " +
-                "spaces and punctuation.",
-              nrNum: "NR 2000948",
+                  decision_text: '',
+                  name: 'COLDSTREAM REFRIGERATION  HVAC SERVICES LIMITED',
+                  state: 'NE',
+                },
+              ],
+              natureBusinessInfo: 'Nature of business can be pretty long so this one is more realistic. It even contains ' +
+                'spaces and punctuation.',
+              nrNum: 'NR 2000948',
               nwpta: [],
               previousNr: null,
               previousRequestId: null,
               previousStateCd: null,
-              priorityCd: "Y",
-              requestTypeCd: "CR",
-              state: "INPROGRESS",
+              priorityCd: 'Y',
+              requestTypeCd: 'CR',
+              state: 'INPROGRESS',
               submitCount: 1,
-              submittedDate: "Wed, 17 Oct 2018 11:37:20 GMT",
-              submitter_userid: "",
-              userId: "tester",
-              xproJurisdiction: null
-            }
-        }))
-      );
+              submittedDate: 'Wed, 17 Oct 2018 11:37:20 GMT',
+              submitter_userid: '',
+              userId: 'tester',
+              xproJurisdiction: null,
+            },
+        })),
+      )
       getCall = sandbox.stub(axios, 'get').withArgs('/api/v1/requests/NR 2000948', sinon.match.any).returns(
         new Promise((resolve) => resolve({
           data:
             {
-              additionalInfo: "More info",
+              additionalInfo: 'More info',
               applicants:
                 {
-                  addrLine1: "940 Blanshard Street",
+                  addrLine1: '940 Blanshard Street',
                   addrLine2: null,
                   addrLine3: null,
-                  city: "Victoria",
+                  city: 'Victoria',
                   clientFirstName: null,
                   clientLastName: null,
-                  contact: "John Test",
-                  countryTypeCd: "CA",
+                  contact: 'John Test',
+                  countryTypeCd: 'CA',
                   declineNotificationInd: null,
-                  emailAddress: "testoutputs@gov.bc.ca",
+                  emailAddress: 'testoutputs@gov.bc.ca',
                   faxNumber: null,
-                  firstName: "John",
-                  lastName: "Test",
+                  firstName: 'John',
+                  lastName: 'Test',
                   middleName: null,
                   partyId: 1822,
-                  phoneNumber: "2505555555",
-                  postalCd: "V8V4K8",
-                  stateProvinceCd: "BC"
+                  phoneNumber: '2505555555',
+                  postalCd: 'V8V4K8',
+                  stateProvinceCd: 'BC',
                 },
               comments: [],
               consentFlag: null,
               corpNum: null,
               expirationDate: null,
-              furnished: "N",
+              furnished: 'N',
               id: 1822,
-              lastUpdate: "Thu, 18 Oct 2018 22:46:54 GMT",
+              lastUpdate: 'Thu, 18 Oct 2018 22:46:54 GMT',
               names: [
                 {
                   choice: 1,
                   comment: null,
-                  conflict1: "",
-                  conflict1_num: "",
-                  conflict2: "",
-                  conflict2_num: "",
-                  conflict3: "",
-                  conflict3_num: "",
+                  conflict1: '',
+                  conflict1_num: '',
+                  conflict2: '',
+                  conflict2_num: '',
+                  conflict3: '',
+                  conflict3_num: '',
                   consumptionDate: null,
-                  decision_text: "",
-                  name: "COLDSTREAM REFRIGERATION  HVAC SERVICES LIMITED",
-                  state: "NE"
-                }],
-              natureBusinessInfo: "Nature of business can be pretty long so this one is more realistic. It even contains " +
-                "spaces and punctuation.",
-              nrNum: "NR 2000948",
+                  decision_text: '',
+                  name: 'COLDSTREAM REFRIGERATION  HVAC SERVICES LIMITED',
+                  state: 'NE',
+                },
+              ],
+              natureBusinessInfo: 'Nature of business can be pretty long so this one is more realistic. It even contains ' +
+                'spaces and punctuation.',
+              nrNum: 'NR 2000948',
               nwpta: [],
               previousNr: null,
               previousRequestId: null,
               previousStateCd: null,
-              priorityCd: "Y",
-              requestTypeCd: "CR",
-              state: "INPROGRESS",
+              priorityCd: 'Y',
+              requestTypeCd: 'CR',
+              state: 'INPROGRESS',
               submitCount: 1,
-              submittedDate: "Wed, 17 Oct 2018 11:37:20 GMT",
-              submitter_userid: "",
-              userId: "tester",
-              xproJurisdiction: null
-            }
-        }))
-      );
+              submittedDate: 'Wed, 17 Oct 2018 11:37:20 GMT',
+              submitter_userid: '',
+              userId: 'tester',
+              xproJurisdiction: null,
+            },
+        })),
+      )
       patchCall = sandbox.stub(axios, 'patch').withArgs('/api/v1/requests/NR 2000948', sinon.match.any).returns(
         new Promise((resolve) => resolve({
           data:
             {
-              message: "Request:NR 2000948 - patched"
-            }
-        }))
-      );
-      vm = instance.$mount();
-      vm.$store.commit('setLoginValues');
-      vm.$store.commit('nrNumber', 'NR 2000948');
-      setTimeout(() => {
-        done();
-      }, 100)
-    });
+              message: 'Request:NR 2000948 - patched',
+            },
+        })),
+      )
+      vm = instance.$mount()
+      vm.$store.commit('setLoginValues')
+      vm.$store.commit('nrNumber', 'NR 2000948')
+      await sleep(2000)
+    })
+
     afterEach(() => {
-      sandbox.restore();
-    });
+      sandbox.restore()
+    })
 
-    describe('cancel/save testing', () => {
-      beforeEach((done) => {
-        click('#nr-details-edit-button');
-        setTimeout(() => {
-          done();
-        }, 100)
-      });
-      afterEach((done) => {
-        setTimeout(() => {
-          done();
-        }, 100)
-      });
+    describe('And they are in Edit Mode', () => {
+      beforeEach(async () => {
+        click('#nr-details-edit-button')
+        await sleep(1000)
+      })
 
-      it('has the cancel button working properly', () => {
-        console.log('CANCEL')
-        click('#nr-details-cancel-button');
-        setTimeout(() => {
-          expect(vm.$el.querySelector('#nr-details-edit-button').textContent).toEqual('Edit');
-          expect(vm.$el.querySelector('#nr-details-save-button')).toBeNull();
-          expect(vm.$el.querySelector('#nr-details-cancel-button')).toBeNull();
+      afterEach(async () => {
+        await sleep(100)
+      })
 
-          // the PATCH should not have been called (ie: no change in state), just a GET
-          expect(patchCall.lastCall).toBeNull();
-          expect(getCall.lastCall).not.toBeNull();
+      it('And they click Cancel, the Edit Details button is visible and the Save/Cancel are not', async () => {
+        click('#nr-details-cancel-button')
+        await sleep(10)
 
-          console.log('END cancel')
-        }, 10);
-      });
+        expect(vm.$el.querySelector('#nr-details-edit-button')).not.toBeNull()
+        expect(vm.$el.querySelector('#nr-details-save-button')).toBeNull()
+        expect(vm.$el.querySelector('#nr-details-cancel-button')).toBeNull()
 
-      it('has the save button working properly', () => {
-        console.log('START save')
+        // the PATCH should not have been called (ie: no change in state), just a GET
+        expect(patchCall.lastCall).toBeNull()
+        expect(getCall.lastCall).not.toBeNull()
+      })
 
-        expect(vm.validate()).toBeTruthy();
-        expect(vm.$el.querySelector('#nr-details-save-button').textContent).toEqual('Save');
-        click('#nr-details-save-button');
+      it('And they click Edit Request, and the Save Button is visible, and it works', async () => {
+        expect(vm.validate()).toBeTruthy()
+        expect(vm.$el.querySelector('#nr-details-save-button')).not.toBeNull()
 
-        setTimeout(() => {
-          expect(vm.$el.querySelector('#nr-details-edit-button').textContent).toEqual('Edit');
-          expect(vm.$el.querySelector('#nr-details-save-button')).toBeNull();
-          expect(vm.$el.querySelector('#nr-details-cancel-button')).toBeNull();
+        click('#nr-details-save-button')
+        await sleep(10)
 
-          // the PUT is called without changing the state, ie: it's still INPROGRESS
-          expect(putCall.lastCall).not.toBeNull();
-          expect(putCall.lastCall.args[1].state).toEqual('INPROGRESS');
-          expect(putCall.lastCall.args[1].previousStateCd).toEqual(null);
+        expect(vm.$el.querySelector('#nr-details-edit-button')).not.toBeNull()
+        expect(vm.$el.querySelector('#nr-details-save-button')).toBeNull()
+        expect(vm.$el.querySelector('#nr-details-cancel-button')).toBeNull()
 
-          console.log('finished');
-        });
-      });
+        // the PUT is called without changing the state, ie: it's still INPROGRESS
+        expect(putCall.lastCall).not.toBeNull()
+        expect(putCall.lastCall.args[1].state).toEqual('INPROGRESS')
+        expect(putCall.lastCall.args[1].previousStateCd).toEqual(null)
+      })
 
-      it('Validates the name choices properly', () => {
-        vm.compName1.name = '';
-        expect(vm.validate()).toBeFalsy();
-        vm.compName1.name = 'COLDSTREAM REFRIGERATION  HVAC SERVICES LIMITED';
-        vm.compName2.name = '';
-        vm.compName3.name = '';
-        expect(vm.validate()).toBeTruthy();
-        vm.compName3.name = 'Test add name choice 3';
-        expect(vm.validate()).toBeFalsy();
-        vm.compName2.name = 'Test add name choice 2';
-        expect(vm.validate()).toBeTruthy();
-        vm.compName2.name = ' ';
-        expect(vm.validate()).toBeFalsy();
-        vm.compName2.name = '';
-        vm.compName3.name = ' ';
-        expect(vm.validate()).toBeTruthy();
-        vm.compName3.name = 'Test add name choice 3';
-        expect(vm.validate()).toBeFalsy();
+      it('And Validates the name choices properly', () => {
+        vm.compName1.name = ''
+        expect(vm.validate()).toBeFalsy()
+        vm.compName1.name = 'COLDSTREAM REFRIGERATION  HVAC SERVICES LIMITED'
+        vm.compName2.name = ''
+        vm.compName3.name = ''
+        expect(vm.validate()).toBeTruthy()
+        vm.compName3.name = 'Test add name choice 3'
+        expect(vm.validate()).toBeFalsy()
+        vm.compName2.name = 'Test add name choice 2'
+        expect(vm.validate()).toBeTruthy()
+        vm.compName2.name = ' '
+        expect(vm.validate()).toBeFalsy()
+        vm.compName2.name = ''
+        vm.compName3.name = ' '
+        expect(vm.validate()).toBeTruthy()
+        vm.compName3.name = 'Test add name choice 3'
+        expect(vm.validate()).toBeFalsy()
 
         // this should do nothing
-        click('#nr-details-save-button');
+        click('#nr-details-save-button')
 
         // reset names and cancel edit - if above 'saved' this will error
-        vm.compName2.name = '';
-        vm.compName3.name = '';
-        expect(vm.validate()).toBeTruthy();
-        click('#nr-details-cancel-button');
-      });
-    });
+        vm.compName2.name = ''
+        vm.compName3.name = ''
+        expect(vm.validate()).toBeTruthy()
+        click('#nr-details-cancel-button')
+      })
+    })
 
-    describe('Edit button hiding testing', () => {
-
-      beforeEach((done) => {
-        sessionStorage.setItem('USER_ROLES', ['names_approver']);
+    describe('And the Edit Button logic is working correctly, so that an Examiner', () => {
+      beforeEach(async () => {
+        sessionStorage.setItem('USER_ROLES', ['names_approver'])
         sessionStorage.setItem('USERNAME', 'max')
-        vm = instance.$mount();
-        vm.$store.commit('setLoginValues');
-        vm.$store.commit('nrNumber', 'NR 2000948');
-        setTimeout(() => {
-          done();
-        }, 100)
-      });
+        vm = instance.$mount()
+        vm.$store.commit('setLoginValues')
+        vm.$store.commit('nrNumber', 'NR 2000948')
+        await sleep(100)
+      })
 
-      describe('I cannot edit when it is not my NR in progress', () => {
+      describe('Cannot edit an INPROGRESS NR that is not their own', () => {
+        it('Edit Request Button is hidden', () => {
+          expect(vm.$el.querySelector('#nr-details-edit-button')).toBeNull()
+        })
+      })
+    })
 
-        it('hides the edit button', () => {
-          console.log('START check edit for not my NR in progress');
-          expect(vm.$el.querySelector('#nr-details-edit-button')).toBeNull();
-          console.log('finished');
-
-        });
-      });
-    });
-
-    describe('Edit button visible testing', () => {
-
-      beforeEach((done) => {
-        sessionStorage.setItem('USER_ROLES', ['names_approver']);
+    describe('But when its their own NR', () => {
+      beforeEach(async () => {
+        sessionStorage.setItem('USER_ROLES', ['names_approver'])
         sessionStorage.setItem('USERNAME', 'tester')
-        vm = instance.$mount();
-        vm.$store.commit('setLoginValues');
-        vm.$store.commit('nrNumber', 'NR 2000948');
-        setTimeout(() => {
-          done();
-        }, 100)
-      });
+        vm = instance.$mount()
+        vm.$store.commit('setLoginValues')
+        vm.$store.commit('nrNumber', 'NR 2000948')
+        await sleep(100)
+      })
 
-      describe('editability testing', () => {
+      describe('They can edit', () => {
+        it('It shows the edit button', () => {
+          expect(vm.$el.querySelector('#nr-details-edit-button')).not.toBeNull()
+        })
+      })
+    })
 
-        it('shows the edit button', () => {
-          console.log('START check edit for not my NR in progress');
-          expect(vm.$el.querySelector('#nr-details-edit-button').textContent).toEqual('Edit');
-          console.log('finished');
-
-        });
-      });
-    });
-
-    describe('Edit button visible for staff testing', () => {
-
-      beforeEach((done) => {
-        sessionStorage.setItem('USER_ROLES', ['names_editor']);
+    describe('And for Staff', () => {
+      beforeEach(async () => {
+        sessionStorage.setItem('USER_ROLES', ['names_editor'])
         sessionStorage.setItem('USERNAME', 'tester')
-        vm = instance.$mount();
-        vm.$store.commit('setLoginValues');
-        vm.$store.commit('nrNumber', 'NR 2000948');
-        setTimeout(() => {
-          done();
-        }, 100)
-      });
+        vm = instance.$mount()
+        vm.$store.commit('setLoginValues')
+        vm.$store.commit('nrNumber', 'NR 2000948')
+        await sleep(100)
+      })
 
-      describe('editability testing', () => {
+      describe('When they are currently editing', () => {
+        it('it shows the Edit Request Button', () => {
+          expect(vm.$el.querySelector('#nr-details-edit-button')).not.toBeNull()
+        })
+      })
+    })
+  })
 
-        it('shows the edit button for a staff member who is currently editing', () => {
-          console.log('START check edit for not my NR in progress');
-          expect(vm.$el.querySelector('#nr-details-edit-button').textContent).toEqual('Edit');
-          console.log('finished');
+  describe('For a Complete NR', () => {
+    let vm
+    let sandbox
 
-        });
-      });
-    });
-  });
-
-  describe('Testing Editing the NR after complete', () => {
-    let vm;
-    let sandbox;
-
-    let putCall, getCall, patchCall;
+    let putCall, getCall, patchCall
 
     let click = function (id) {
-      console.log('ID: ', id)
-      let button = vm.$el.querySelector(id);
-      let window = button.ownerDocument.defaultView;
-      var click = new window.Event('click');
-      button.dispatchEvent(click);
-    };
-    beforeEach((done) => {
+      let button = vm.$el.querySelector(id)
+      let window = button.ownerDocument.defaultView
+      var click = new window.Event('click')
+      button.dispatchEvent(click)
+    }
 
-      sandbox = sinon.createSandbox();
+    beforeEach(async () => {
+      sandbox = sinon.createSandbox()
       putCall = sandbox.stub(axios, 'put').withArgs('/api/v1/requests/NR 2000952', sinon.match.any).returns(
         new Promise((resolve) => resolve({
           data:
             {
-              additionalInfo: "More info",
+              additionalInfo: 'More info',
               applicants:
                 {
-                  addrLine1: "940 Blanshard Street",
+                  addrLine1: '940 Blanshard Street',
                   addrLine2: null,
                   addrLine3: null,
-                  city: "Victoria",
+                  city: 'Victoria',
                   clientFirstName: null,
                   clientLastName: null,
-                  contact: "John Test",
-                  countryTypeCd: "CA",
+                  contact: 'John Test',
+                  countryTypeCd: 'CA',
                   declineNotificationInd: null,
-                  emailAddress: "testoutputs@gov.bc.ca",
+                  emailAddress: 'testoutputs@gov.bc.ca',
                   faxNumber: null,
-                  firstName: "John",
-                  lastName: "Test",
+                  firstName: 'John',
+                  lastName: 'Test',
                   middleName: null,
                   partyId: 1822,
-                  phoneNumber: "2505555555",
-                  postalCd: "V8V4K8",
-                  stateProvinceCd: "BC"
+                  phoneNumber: '2505555555',
+                  postalCd: 'V8V4K8',
+                  stateProvinceCd: 'BC',
                 },
               comments: [],
               consentFlag: null,
               corpNum: null,
               expirationDate: null,
-              furnished: "N",
+              furnished: 'N',
               id: 1822,
-              lastUpdate: "Thu, 18 Oct 2018 22:46:54 GMT",
+              lastUpdate: 'Thu, 18 Oct 2018 22:46:54 GMT',
               names: [
                 {
                   choice: 1,
                   comment: null,
-                  conflict1: "",
-                  conflict1_num: "",
-                  conflict2: "",
-                  conflict2_num: "",
-                  conflict3: "",
-                  conflict3_num: "",
+                  conflict1: '',
+                  conflict1_num: '',
+                  conflict2: '',
+                  conflict2_num: '',
+                  conflict3: '',
+                  conflict3_num: '',
                   consumptionDate: null,
-                  decision_text: "",
-                  name: "COLDSTREAM REFRIGERATION  HVAC SERVICES LIMITED",
-                  state: "REJECTED"
-                }],
-              natureBusinessInfo: "Nature of business can be pretty long so this one is more realistic. It even contains " +
-              "spaces and punctuation.",
-              nrNum: "NR 2000952",
+                  decision_text: '',
+                  name: 'COLDSTREAM REFRIGERATION  HVAC SERVICES LIMITED',
+                  state: 'REJECTED',
+                },
+              ],
+              natureBusinessInfo: 'Nature of business can be pretty long so this one is more realistic. It even contains ' +
+                'spaces and punctuation.',
+              nrNum: 'NR 2000952',
               nwpta: [],
               previousNr: null,
               previousRequestId: null,
               previousStateCd: null,
-              priorityCd: "Y",
-              requestTypeCd: "CR",
-              state: "REJECTED",
+              priorityCd: 'Y',
+              requestTypeCd: 'CR',
+              state: 'REJECTED',
               submitCount: 1,
-              submittedDate: "Wed, 17 Oct 2018 11:37:20 GMT",
-              submitter_userid: "",
-              userId: "tester",
-              xproJurisdiction: null
-            }
-        }))
-      );
+              submittedDate: 'Wed, 17 Oct 2018 11:37:20 GMT',
+              submitter_userid: '',
+              userId: 'tester',
+              xproJurisdiction: null,
+            },
+        })),
+      )
       getCall = sandbox.stub(axios, 'get').withArgs('/api/v1/requests/NR 2000952', sinon.match.any).returns(
         new Promise((resolve) => resolve({
           data:
             {
-              additionalInfo: "More info",
+              additionalInfo: 'More info',
               applicants:
                 {
-                  addrLine1: "940 Blanshard Street",
+                  addrLine1: '940 Blanshard Street',
                   addrLine2: null,
                   addrLine3: null,
-                  city: "Victoria",
+                  city: 'Victoria',
                   clientFirstName: null,
                   clientLastName: null,
-                  contact: "John Test",
-                  countryTypeCd: "CA",
+                  contact: 'John Test',
+                  countryTypeCd: 'CA',
                   declineNotificationInd: null,
-                  emailAddress: "testoutputs@gov.bc.ca",
+                  emailAddress: 'testoutputs@gov.bc.ca',
                   faxNumber: null,
-                  firstName: "John",
-                  lastName: "Test",
+                  firstName: 'John',
+                  lastName: 'Test',
                   middleName: null,
                   partyId: 1822,
-                  phoneNumber: "2505555555",
-                  postalCd: "V8V4K8",
-                  stateProvinceCd: "BC"
+                  phoneNumber: '2505555555',
+                  postalCd: 'V8V4K8',
+                  stateProvinceCd: 'BC',
                 },
               comments: [],
               consentFlag: null,
               corpNum: null,
               expirationDate: null,
-              furnished: "N",
+              furnished: 'N',
               id: 1822,
-              lastUpdate: "Thu, 18 Oct 2018 22:46:54 GMT",
+              lastUpdate: 'Thu, 18 Oct 2018 22:46:54 GMT',
               names: [
                 {
                   choice: 1,
                   comment: null,
-                  conflict1: "",
-                  conflict1_num: "",
-                  conflict2: "",
-                  conflict2_num: "",
-                  conflict3: "",
-                  conflict3_num: "",
+                  conflict1: '',
+                  conflict1_num: '',
+                  conflict2: '',
+                  conflict2_num: '',
+                  conflict3: '',
+                  conflict3_num: '',
                   consumptionDate: null,
-                  decision_text: "",
-                  name: "COLDSTREAM REFRIGERATION  HVAC SERVICES LIMITED",
-                  state: "REJECTED"
-                }],
-              natureBusinessInfo: "Nature of business can be pretty long so this one is more realistic. It even contains " +
-              "spaces and punctuation.",
-              nrNum: "NR 2000952",
+                  decision_text: '',
+                  name: 'COLDSTREAM REFRIGERATION  HVAC SERVICES LIMITED',
+                  state: 'REJECTED',
+                },
+              ],
+              natureBusinessInfo: 'Nature of business can be pretty long so this one is more realistic. It even contains ' +
+                'spaces and punctuation.',
+              nrNum: 'NR 2000952',
               nwpta: [],
               previousNr: null,
               previousRequestId: null,
               previousStateCd: null,
-              priorityCd: "Y",
-              requestTypeCd: "CR",
-              state: "REJECTED",
+              priorityCd: 'Y',
+              requestTypeCd: 'CR',
+              state: 'REJECTED',
               submitCount: 1,
-              submittedDate: "Wed, 17 Oct 2018 11:37:20 GMT",
-              submitter_userid: "",
-              userId: "tester",
-              xproJurisdiction: null
-            }
-        }))
-      );
+              submittedDate: 'Wed, 17 Oct 2018 11:37:20 GMT',
+              submitter_userid: '',
+              userId: 'tester',
+              xproJurisdiction: null,
+            },
+        })),
+      )
       patchCall = sandbox.stub(axios, 'patch').withArgs('/api/v1/requests/NR 2000952', sinon.match.any).returns(
         new Promise((resolve) => resolve({
           data:
             {
-              message: "Request:NR 2000952 - patched"
-            }
-        }))
-      );
-      vm = instance.$mount();
-      vm.$store.commit('setLoginValues');
-      vm.$store.commit('nrNumber', 'NR 2000952');
-      setTimeout(() => {
-        done();
-      }, 100)
-    });
+              message: 'Request:NR 2000952 - patched',
+            },
+        })),
+      )
+      vm = instance.$mount()
+      vm.$store.commit('setLoginValues')
+      vm.$store.commit('nrNumber', 'NR 2000952')
+      await sleep(100)
+    })
+
     afterEach(() => {
-      sandbox.restore();
-    });
+      sandbox.restore()
+    })
 
-    describe('cancel/save testing', () => {
-      beforeEach((done) => {
-        click('#nr-details-edit-button');
-        setTimeout(() => {
-          done();
-        }, 100)
-      });
-      afterEach((done) => {
-        setTimeout(() => {
-          done();
-        }, 100)
-      });
+    describe('After clicking Cancel, The Edit Request Button', () => {
+      beforeEach(async () => {
+        click('#nr-details-edit-button')
+        await sleep(100)
+      })
 
-      it('has the cancel button working properly', () => {
-        console.log('CANCEL')
-        click('#nr-details-cancel-button');
-        setTimeout(() => {
-          expect(vm.$el.querySelector('#nr-details-edit-button').textContent).toEqual('Edit');
-          expect(vm.$el.querySelector('#nr-details-save-button')).toBeNull();
-          expect(vm.$el.querySelector('#nr-details-cancel-button')).toBeNull();
+      afterEach(async () => {
+        await sleep(100)
+      })
 
-          // the PATCH should not have been called (ie: no change in state), just a GET
-          expect(patchCall.lastCall).toBeNull();
-          expect(getCall.lastCall).not.toBeNull();
+      it('is visible and the cancel/save button is not ', async () => {
+        click('#nr-details-cancel-button')
+        await sleep(10)
 
-          console.log('END cancel')
-        }, 10);
-      });
+        expect(vm.$el.querySelector('#nr-details-edit-button')).not.toBeNull()
+        expect(vm.$el.querySelector('#nr-details-save-button')).toBeNull()
+        expect(vm.$el.querySelector('#nr-details-cancel-button')).toBeNull()
 
-      it('has the save button working properly', () => {
-        console.log('START save')
+        // the PATCH should not have been called (ie: no change in state), just a GET
+        expect(patchCall.lastCall).toBeNull()
+        expect(getCall.lastCall).not.toBeNull()
+      })
 
-        expect(vm.validate()).toBeTruthy();
-        expect(vm.$el.querySelector('#nr-details-save-button').textContent).toEqual('Save');
-        click('#nr-details-save-button');
+      it('And after clicking Edit Request, the Cancel/Save buttons are visible and working', async () => {
+        expect(vm.validate()).toBeTruthy()
+        expect(vm.$el.querySelector('#nr-details-save-button')).not.toBeNull()
 
-        setTimeout(() => {
-          expect(vm.$el.querySelector('#nr-details-edit-button').textContent).toEqual('Edit');
-          expect(vm.$el.querySelector('#nr-details-save-button')).toBeNull();
-          expect(vm.$el.querySelector('#nr-details-cancel-button')).toBeNull();
+        click('#nr-details-save-button')
+        await sleep(10)
 
-          // the PUT is called without changing the state, ie: it's still REJECTED
-          expect(putCall.lastCall).not.toBeNull();
-          expect(putCall.lastCall.args[1].state).toEqual('REJECTED');
-          expect(putCall.lastCall.args[1].previousStateCd).toEqual(null);
+        expect(vm.$el.querySelector('#nr-details-edit-button')).not.toBeNull()
+        expect(vm.$el.querySelector('#nr-details-save-button')).toBeNull()
+        expect(vm.$el.querySelector('#nr-details-cancel-button')).toBeNull()
 
-          console.log('finished');
-        });
-      });
-    });
-
-  });
+        // the PUT is called without changing the state, ie: it's still REJECTED
+        expect(putCall.lastCall).not.toBeNull()
+        expect(putCall.lastCall.args[1].state).toEqual('REJECTED')
+        expect(putCall.lastCall.args[1].previousStateCd).toEqual(null)
+      })
+    })
+  })
 
   describe('Testing View-only users cannot see the Edit button even when the NR is in DRAFT', () => {
-    let vm;
-    let sandbox;
+    let vm
+    let sandbox
 
-    beforeEach((done) => {
-      sessionStorage.setItem('USER_ROLES', ['names_viewer']);
-      sandbox = sinon.createSandbox();
-      vm = instance.$mount();
-      vm.$store.commit('setLoginValues');
-      setTimeout(() => {
-        done();
-      }, 100)
-    });
+    beforeEach(async () => {
+      sessionStorage.setItem('USER_ROLES', ['names_viewer'])
+      sandbox = sinon.createSandbox()
+      vm = instance.$mount()
+      vm.$store.commit('setLoginValues')
+      await sleep(100)
+    })
+
     afterEach(() => {
-      sandbox.restore();
-    });
+      sandbox.restore()
+    })
 
     it('Does not has the edit button for a viewer', () => {
-      expect(vm.$el.querySelector('#nr-details-edit-button')).toBeNull();
-    });
-  });
+      expect(vm.$el.querySelector('#nr-details-edit-button')).toBeNull()
+    })
+  })
 
   describe('Testing Staff (edit but not examine) users can see the Edit button when the NR is in DRAFT', () => {
-    let vm;
-    let sandbox;
+    let vm
+    let sandbox
 
-    beforeEach((done) => {
-      sessionStorage.setItem('USER_ROLES', ['names_editor']);
-      sandbox = sinon.createSandbox();
-      vm = instance.$mount();
-      vm.$store.commit('setLoginValues');
-      setTimeout(() => {
-        done();
-      }, 100)
-    });
+    beforeEach(async () => {
+      sessionStorage.setItem('USER_ROLES', ['names_editor'])
+      sandbox = sinon.createSandbox()
+      vm = instance.$mount()
+      vm.$store.commit('setLoginValues')
+      await sleep(100)
+    })
+
     afterEach(() => {
-      sandbox.restore();
-    });
+      sandbox.restore()
+    })
 
     it('has the edit button for a staff member', () => {
-      expect(vm.$el.querySelector('#nr-details-edit-button').textContent).toEqual('Edit');
-    });
-  });
+      expect(vm.$el.querySelector('#nr-details-edit-button')).not.toBeNull()
+    })
+  })
 
-});
+  describe('When a CONDITIONAL NR with corpNum is loaded', () => {
+    let vm
+    let sandbox
+
+    let getCall
+
+    beforeEach(async () => {
+      sandbox = sinon.createSandbox()
+      getCall = sandbox.stub(axios, 'get').withArgs('/api/v1/requests/NR 2000111', sinon.match.any).returns(
+        new Promise((resolve) => resolve({
+          data:
+            {
+              "additionalInfo": "**Change of Name** **S1000744** ",
+              "applicants": {
+                "addrLine1": "200 - 940 BLANSHARD ST",
+                "addrLine2": null,
+                "addrLine3": null,
+                "city": "VICTORIA",
+                "clientFirstName": null,
+                "clientLastName": null,
+                "contact": "John Test",
+                "countryTypeCd": "CA",
+                "declineNotificationInd": "N",
+                "emailAddress": "testoutputs@gov.bc.ca",
+                "faxNumber": null,
+                "firstName": "John",
+                "lastName": "test",
+                "middleName": "a",
+                "partyId": 1822,
+                "phoneNumber": "2505555555",
+                "postalCd": "V8V4K8",
+                "stateProvinceCd": "BC"
+              },
+              "checkedOutBy": null,
+              "checkedOutDt": null,
+              "comments": [],
+              "consentFlag": "Y",
+              "consent_dt": null,
+              "corpNum": "S1000744",
+              "entity_type_cd": null,
+              "expirationDate": "2022-06-02T06:59:00+00:00",
+              "furnished": "Y",
+              "hasBeenReset": false,
+              "homeJurisNum": null,
+              "id": 2264301,
+              "lastUpdate": "2022-04-06T17:34:10.209632+00:00",
+              "names": [
+                {
+                  "choice": 1,
+                  "comment": null,
+                  "conflict1": "",
+                  "conflict1_num": "",
+                  "conflict2": "",
+                  "conflict2_num": "",
+                  "conflict3": "",
+                  "conflict3_num": "",
+                  "consumptionDate": null,
+                  "corpNum": "S1000744",
+                  "decision_text": "BC - Use of 'British Columbia' requires consent from:  The Office of Protocol. Approval Takes 7 - 10 Business Days.  Applications Forms at http://gov.bc.ca/useofbcname. Please scan your consent to bcregistries@gov.bc.ca\n\n",
+                  "designation": null,
+                  "id": 4265876,
+                  "name": "xyz NEWLY NAMED SOCIETY",
+                  "name_type_cd": null,
+                  "state": "CONDITION"
+                }
+              ],
+              "natureBusinessInfo": "stuff",
+              "notifiedBeforeExpiry": false,
+              "notifiedExpiry": false,
+              "nrNum": "NR 2000111",
+              "nwpta": [],
+              "previousNr": null,
+              "previousRequestId": null,
+              "previousStateCd": null,
+              "priorityCd": "N",
+              "priorityDate": null,
+              "requestTypeCd": "CSO",
+              "request_action_cd": null,
+              "source": "NRO",
+              "state": "CONDITIONAL",
+              "stateCd": "CONDITIONAL",
+              "submitCount": 1,
+              "submittedDate": "2022-04-06T17:29:51+00:00",
+              "submitter_userid": "",
+              "tradeMark": null,
+              "userId": "tester",
+              "xproJurisdiction": null
+            },
+        })),
+      )
+      vm = instance.$mount()
+      vm.$store.commit('setLoginValues')
+      vm.$store.commit('nrNumber', 'NR 2000111')
+      await sleep(1000)
+    })
+
+    afterEach(() => {
+      sandbox.restore()
+    })
+
+    it('Displays the Proper NR Status Text', () => {
+      expect(vm.nr_status).toEqual('CONDITIONAL')
+      expect(vm.$el.querySelector('#nrStatusText').textContent.trim()).toEqual('CONDITIONAL')
+    })
+
+    it('Displays consume fields properly', () => {
+      expect(vm.consumptionDate).toEqual('')
+      expect(vm.$el.querySelector('#consumption-date').textContent.trim()).toEqual('Consumed: n/a')
+      expect(vm.consumedBy).toEqual('')
+      expect(vm.$el.querySelector('#consumed-by').textContent.trim()).toEqual('Consumed by: n/a')
+    })
+  })
+
+  describe('When a CONSUMED NR with corpNum is loaded', () => {
+    let vm
+    let sandbox
+
+    let getCall
+
+    beforeEach(async () => {
+      sandbox = sinon.createSandbox()
+      getCall = sandbox.stub(axios, 'get').withArgs('/api/v1/requests/NR 2000222', sinon.match.any).returns(
+        new Promise((resolve) => resolve({
+          data:
+            {
+              "additionalInfo": "**Change of Name** **S1000744** ",
+              "applicants": {
+                "addrLine1": "200 - 940 BLANSHARD ST",
+                "addrLine2": null,
+                "addrLine3": null,
+                "city": "VICTORIA",
+                "clientFirstName": null,
+                "clientLastName": null,
+                "contact": "John Test",
+                "countryTypeCd": "CA",
+                "declineNotificationInd": "N",
+                "emailAddress": "testoutputs@gov.bc.ca",
+                "faxNumber": null,
+                "firstName": "John",
+                "lastName": "test",
+                "middleName": "a",
+                "partyId": 1822,
+                "phoneNumber": "2505555555",
+                "postalCd": "V8V4K8",
+                "stateProvinceCd": "BC"
+              },
+              "checkedOutBy": null,
+              "checkedOutDt": null,
+              "comments": [],
+              "consentFlag": "Y",
+              "consent_dt": null,
+              "corpNum": "S1000744",
+              "entity_type_cd": null,
+              "expirationDate": "2022-06-02T06:59:00+00:00",
+              "furnished": "Y",
+              "hasBeenReset": false,
+              "homeJurisNum": null,
+              "id": 2264301,
+              "lastUpdate": "2022-04-06T17:34:10.209632+00:00",
+              "names": [
+                {
+                  "choice": 1,
+                  "comment": null,
+                  "conflict1": "",
+                  "conflict1_num": "",
+                  "conflict2": "",
+                  "conflict2_num": "",
+                  "conflict3": "",
+                  "conflict3_num": "",
+                  "consumptionDate": "2021-10-27T12:45:22+00:00",
+                  "corpNum": "S1000744",
+                  "decision_text": "BC - Use of 'British Columbia' requires consent from:  The Office of Protocol. Approval Takes 7 - 10 Business Days.  Applications Forms at http://gov.bc.ca/useofbcname. Please scan your consent to bcregistries@gov.bc.ca\n\n",
+                  "designation": null,
+                  "id": 4265876,
+                  "name": "xyz NEWLY NAMED SOCIETY",
+                  "name_type_cd": null,
+                  "state": "CONDITION"
+                }
+              ],
+              "natureBusinessInfo": "stuff",
+              "notifiedBeforeExpiry": false,
+              "notifiedExpiry": false,
+              "nrNum": "NR 2000222",
+              "nwpta": [],
+              "previousNr": null,
+              "previousRequestId": null,
+              "previousStateCd": null,
+              "priorityCd": "N",
+              "priorityDate": null,
+              "requestTypeCd": "CSO",
+              "request_action_cd": null,
+              "source": "NRO",
+              "state": "CONSUMED",
+              "stateCd": "CONSUMED",
+              "submitCount": 1,
+              "submittedDate": "2022-04-06T17:29:51+00:00",
+              "submitter_userid": "",
+              "tradeMark": null,
+              "userId": "tester",
+              "xproJurisdiction": null
+            },
+        })),
+      )
+      vm = instance.$mount()
+      vm.$store.commit('setLoginValues')
+      vm.$store.commit('nrNumber', 'NR 2000222')
+      await sleep(1000)
+    })
+
+    afterEach(() => {
+      sandbox.restore()
+    })
+
+    it('Displays the Proper NR Status Text', () => {
+      expect(vm.nr_status).toEqual('CONSUMED')
+      expect(vm.$el.querySelector('#nrStatusText').textContent.trim()).toEqual('CONDITIONAL APPROVED-CONSUMED')
+    })
+
+    it('Displays consume fields properly', () => {
+      expect(vm.consumptionDate).toEqual('2021-10-27')
+      expect(vm.$el.querySelector('#consumption-date').textContent.trim()).toEqual('Consumed: 2021-10-27')
+      expect(vm.consumedBy).toEqual('S1000744')
+      expect(vm.$el.querySelector('#consumed-by').textContent.trim()).toEqual('Consumed by: S1000744')
+    })
+  })
+
+})

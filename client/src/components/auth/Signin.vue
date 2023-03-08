@@ -27,11 +27,10 @@
         this.$store.commit('saveKeyCloak', keycloak);
 
         var token
-        const vm = this
+        const vm = this     
 
         keycloak.init({token: token, onLoad: 'login-required'}).success(function (authenticated) {
           if (authenticated) {
-            console.log('Keycloak Authenticated')
 
             sessionStorage.setItem('KEYCLOAK_TOKEN', keycloak.token);
             sessionStorage.setItem('KEYCLOAK_REFRESH', keycloak.refreshToken);
@@ -41,35 +40,30 @@
             sessionStorage.setItem('USER_ROLES', roles);
 
             if(!roles || roles.length === 0) {
-              console.log('********** DANGER, WILL ROBINSON, DANGER! logging out... because user has a token but no ROLE!')
               sessionStorage.setItem("AUTHORIZED", false);
             } else {
-              console.log('Authorized role(s) for user!');
               sessionStorage.setItem("AUTHORIZED", true);
 
             // Get user profile
-              keycloak.loadUserProfile().success(function (userProfile) {
+              keycloak.loadUserProfile().success(
+                function (userProfile) {
                 app.userName = userProfile.username;
                 sessionStorage.setItem('USERNAME', app.userName);
-
-                console.log('set login values');
                 vm.$store.commit('setLoginValues')
 
               });
-
               // everthing is good, re-direct to home page
-              vm.$router.push("/home")
+                vm.$router.push('/home')
             }
 
           } else {
-            alert('not authenticated');
+            alert('Error - not authenticated');
           }
         }).error(function () {
-          alert('failed to initialize');
+          alert('Error - failed to initialize');
         });
 
       }else{
-        console.log('Signin - checking Token')
         this.$store.dispatch('checkToken')
 
       }

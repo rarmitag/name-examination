@@ -1,108 +1,14 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ConflictList.vue renders a ConflictList component 1`] = `
-<div
-  class="col conflict-list-parent-col"
+<v-container-stub
+  container-style=""
+  id="conflicts-container"
+  tag="div"
 >
-  <div
-    class="row conflict-list-view"
-  >
-    <div
-      border="0"
-      class="form-control"
-      id="conflict-list"
-      size="17"
-      style="overflow-y: scroll; max-height: 480px;"
-      tabindex="2"
-    >
-      <div
-        class="exact-match-title"
-      >
-        <div>
-          Exact Match
-        </div>
-      </div>
-      <div
-        class="exact-match-spinner spinner-wrapper hidden"
-      >
-        <spinner-stub
-          classname="mini"
-        />
-      </div>
-      <div
-        class="conflict-no-match"
-      >
-        <div>
-          No Exact Match
-        </div>
-      </div>
-       
-      <div
-        class="synonym-match-title"
-      >
-        <div>
-          Exact Word Order + Synonym Match
-        </div>
-      </div>
-      <div
-        class="synonym-match-spinner spinner-wrapper hidden"
-      >
-        <spinner-stub
-          classname="mini"
-        />
-      </div>
-      <div
-        class="conflict-no-match"
-      >
-        <div>
-          No Match
-        </div>
-      </div>
-       
-      <div
-        class="cobrs-phonetic-match-title"
-      >
-        <div>
-          Character Swap Match
-        </div>
-      </div>
-      <div
-        class="cobrs-phonetic-match-spinner spinner-wrapper hidden"
-      >
-        <spinner-stub
-          classname="mini"
-        />
-      </div>
-      <div
-        class="conflict-no-match"
-      >
-        <div>
-          No Match
-        </div>
-      </div>
-       
-      <div
-        class="phonetic-match-title"
-      >
-        <div>
-          Phonetic Match (experimental)
-        </div>
-      </div>
-      <div
-        class="phonetic-match-spinner spinner-wrapper hidden"
-      >
-        <spinner-stub
-          classname="mini"
-        />
-      </div>
-      <div
-        class="conflict-no-match"
-      >
-        <div>
-          No Match
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+  <spinner-stub
+    classname="conflict-container-spinner hidden"
+  />
+   
+</v-container-stub>
 `;

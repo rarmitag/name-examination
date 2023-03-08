@@ -1,86 +1,73 @@
 /* eslint-disable */
 <template>
-  <div>
-    <div class="container-fluid">
-      <div class="row ConflictInfo">
-
-          <spinner className="conflict-detail-spinner hidden" />
-
-          <div class="col conflict-info-view">
-            <div v-if="is_corp" class="add-top-padding">
-              <corpMatch />
-            </div>
-            <div v-else-if="is_names" class="add-top-padding">
-              <namesMatch />
-            </div>
-            <div v-else class="add-top-padding">
-              <nullMatch />
-            </div>
-          </div>
-
-      </div>
-    </div>
-
-  </div>
+  <v-container ma-0 pa-0 fluid bg-color id="conflict-info-container">
+    <v-layout id="conflict-info-layout">
+      <spinner className="conflict-detail-spinner pb-5"/>
+      <CorpMatch id="corpmatch"
+                 class="conflict-info-view"
+                 :conflictData="corpConflictJSON"
+                 v-if="is_corp"/>
+      <NamesMatch id="namematch"
+                  :conflictData="namesConflictJSON"
+                  class="conflict-info-view"
+                  v-else-if="is_names"/>
+      <NullMatch class="conflict-info-view" v-else/>
+    </v-layout>
+  </v-container>
 </template>
 
 <script>
 /* eslint-disable */
-
-import nullMatch from '@/components/application/Examine/Recipe/conflicts/conflictInfoType/nullMatch.vue';
-import namesMatch from '@/components/application/Examine/Recipe/conflicts/conflictInfoType/namesMatch.vue';
-import corpMatch from '@/components/application/Examine/Recipe/conflicts/conflictInfoType/corpMatch.vue';
-import spinner from '@/components/application/spinner.vue';
+  import CorpMatch from './conflictInfoType/CorpMatch.vue'
+  import NamesMatch from './conflictInfoType/NamesMatch.vue'
+  import NullMatch from './conflictInfoType/NullMatch.vue'
+  import spinner from '@/components/application/spinner.vue'
+  import { mapGetters } from 'vuex'
 
   export default {
     name: 'ConflictInfo',
-    components: {
-      spinner,
-      namesMatch,
-      corpMatch,
-      nullMatch
+    components: { CorpMatch, NamesMatch, NullMatch, spinner, },
+    mounted() {
+      this.scrollIntoView()
     },
     computed: {
-
-      currentConflict: {
-        get: function () {
-          return this.$store.getters.currentConflict;
-        }
-      },
+      ...mapGetters(['currentConflict', 'namesConflictJSON', 'corpConflictJSON']),
       is_corp() {
         if (this.currentConflict != undefined) {
-          if (this.currentConflict.source === 'CORP') return true;
-          return false
+          if (this.currentConflict.source === 'CORP') return true
         }
-        return false;
+        return false
       },
       is_names() {
         if (this.currentConflict != undefined) {
-          if (this.currentConflict.source === 'NR') return true;
-          return false
+          if (this.currentConflict.source === 'NR') return true
         }
-        return false;
+        return false
       },
     },
+    watch: {
+      currentConflict(newData, oldData) {
+        if (newData) {
+          this.scrollIntoView()
+        }
+      }
+    },
+    methods: {
+      scrollIntoView() {
+        this.$nextTick(function () {
+          this.$el.scrollIntoViewIfNeeded()
+        })
+      }
+    }
   }
 </script>
 
 <style scoped>
-  .conflict-info-view {
-    /*background-color: #000000;*/
-    padding: 10px;
+  .conflict-detail-spinner:not(.hidden) ~ .conflict-info-view {
+    display: none !important;
   }
-
-  /* hide the panel content when spinner is showing, ie: results are loading */
-  .spinner:not(.hidden) + .conflict-info-view {
-    display: none;
-  }
-
-  h3, h2 {
-    font-size: 15px;
-  }
-  p {
-    font-size: 14px;
+  .bg-color {
+    background-color: var(--l-blue);
   }
 
 </style>

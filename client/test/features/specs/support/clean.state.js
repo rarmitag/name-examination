@@ -2,16 +2,16 @@
 module.exports = {
   cleanState: () => {
     return {
-      //User Info
-
-      myKeycloak: {},
+      // User Info
+      myKeycloak: null,
       userId: null,
       user_roles: [],
       authorized: false,
       email: null,
       errorJSON: null,
+      adminURL: null,
 
-      //Interface settings
+      // Interface settings
       currentChoice: null, // CURRENT NAME BEING EXAMINED (choice number)
       currentName: null, // CURRENT NAME BEING EXAMINED (string)
       currentNameObj: { // CURRENT NAME BEING EXAMINED (complete object)
@@ -19,29 +19,29 @@ module.exports = {
         choice: null,
       },
       currentState: null, // NR - APPROVED, REJECTED, INPROGRESS ETC...
+      previousStateCd: null,
 
       currentConflict: null, // the conflict name currently in focus
       currentCondition: null, // the condition currently in focus
       currentTrademark: null, // the trademark currently in focus
-      currentHistory: null, //NR number of history name selected
+      currentHistory: null,  //NR number of history name selected
 
       currentRecipeCard: null,
-      is_my_current_nr: null,
+      is_my_current_nr: false,
       is_editing: false,
       is_making_decision: false,
       decision_made: null,
-      acceptance_will_be_conditional: false,
       is_header_shown: false,
       furnished: null,
+      hasBeenReset: null,
       listPriorities: null, // DROP LIST
       listJurisdictions: null, // DROP LIST
       listRequestTypes: null, // DROP LIST
       listDecisionReasons: null,
+      requestTypeRules: null, // list of request type rules, internal use only no display
 
-      requestTypeRules: [], // list of request type rules, internal use only no display
-
-      //Names Data
-      //nr_conflict: null,
+      // Names Data
+      // nr_conflict: null,
       details: null,
       additionalInfo: null,
       internalComments: [],
@@ -55,9 +55,13 @@ module.exports = {
             name: null,
             state: null,
             consumptionDate: null,
+            corpNum: null,
             conflict1: null,
             conflict2: null,
             conflict3: null,
+            conflict1_num: null,
+            conflict2_num: null,
+            conflict3_num: null,
             decision_text: null,
             comment: null,
           },
@@ -66,9 +70,13 @@ module.exports = {
             name: null,
             state: null,
             consumptionDate: null,
+            corpNum: null,
             conflict1: null,
             conflict2: null,
             conflict3: null,
+            conflict1_num: null,
+            conflict2_num: null,
+            conflict3_num: null,
             decision_text: null,
             comment: null,
           },
@@ -77,9 +85,13 @@ module.exports = {
             name: null,
             state: null,
             consumptionDate: null,
+            corpNum: null,
             conflict1: null,
             conflict2: null,
             conflict3: null,
+            conflict1_num: null,
+            conflict2_num: null,
+            conflict3_num: null,
             decision_text: null,
             comment: null,
           },
@@ -94,7 +106,7 @@ module.exports = {
         applicantName: {
           firstName: null,
           lastName: null,
-          middleName: null
+          middleName: null,
         },
         contactInfo: {
           addressLine1: null,
@@ -107,7 +119,7 @@ module.exports = {
           contactName: null,
           phone: null,
           email: null,
-          fax: null
+          fax: null,
         },
       },
       additionalCompInfo: {
@@ -150,12 +162,20 @@ module.exports = {
         issue_Consent_Text: null,
         issue_TradeMark_Text: null,
         issue_History_Text: null,
-        issue_Format_Text: null
+        issue_Format_Text: null,
       },
 
-      searchQuery: '?order=priorityCd:desc,submittedDate:asc&queue=hold&furnished=true&unfurnished=true&rows=10',
-      searchQuerySpecial: '?order=priorityCd:desc,submittedDate:asc&queue=hold&furnished=true&unfurnished=true&rows=10',
+      searchQuery: '?order=priorityCd:desc,submittedDate:asc&queue=hold&ranking=All&notification=All&' + 'submittedInterval=30 days&lastUpdateInterval=All&rows=10',
       searchState: 'HOLD',
+      searchNr: '',
+      searchUsername: '',
+      searchCompName: '',
+      searchRanking: 'All',
+      searchNotification: 'All',
+      searchSubmittedInterval: 'All',
+      searchLastUpdatedInterval: 'All',
+      searchCurrentPage: 1,
+      searchPerPage: 10,
 
       exactMatchesConflicts: [],
       synonymMatchesConflicts: [],
@@ -175,41 +195,63 @@ module.exports = {
       searchDataJSON: null,
       conditionsJSON: null,
       statsDataJSON: {
-        hold: {
-          response: {
-            numfound: ''
-          }
-        },
-        draft: {
-          response: {
-            numfound: ''
-          }
-        },
-        expired: {
-          response: {
-            numfound: ''
-          }
-        },
-        cancelled: {
-          response: {
-            numfound: ''
-          }
-        },
-        approved: {
-          response: {
-            numfound: ''
-          }
-        },
-        conditional: {
-          response: {
-            numfound: ''
-          }
-        },
-        rejected: {
-          response: {
-            numfound: ''
-          }
-        }
+        hold: { response: { numfound: '' } },
+        draft: { response: { numfound: '' } },
+        expired: { response: { numfound: '' } },
+        cancelled: { response: { numfound: '' } },
+        approved: { response: { numfound: '' } },
+        conditional: { response: { numfound: '' } },
+        rejected: { response: { numfound: '' } },
+      },
+
+      // introduced during name-examination code with us upgrade
+      activeRequestBannerPopUp: null,
+      comparedConflicts: [],
+      conflictsAutoAdd: true,
+      conflictsChildIndex: 0,
+      conflictsChildren: [],
+      conflictsIndex: 0,
+      conflictsReturnedStatus: false,
+      conflictsScrollPosition: 0,
+      consentRequiredByUser: false,
+      customerMessageOverride: null,
+      expandedConflictID: null,
+      newComment: null,
+      openBucket: null,
+      parsedCOBRSConflicts: [],
+      parsedPhoneticConflicts: [],
+      parsedSynonymConflicts: [],
+      selectedConditions: [],
+      selectedConflictID: null,
+      selectedConflictNRs: [],
+      selectedConflicts: [],
+      selectedReasons: [],
+      selectedTrademarks: [],
+      showCommentsPopUp: false,
+      transactionsModalVisible: false,
+      transactionsData: null,
+      pendingTransactionsRequest: false,
+      transactionsModalState: {
+        maximized: true,
+        page: 1,
+        expand: null,
+        scrollOffset: 0,
+        sortDescending: true,
+      },
+
+      nrInfo: {
+        additionalInfo: '',
+        consent_dt: null,
+        consentFlag: null,
+        corpNum: null,
+        entity_type_cd: null,
+        expirationDate: null,
+        names: [],
+        priorityCd: null,
+        request_action_cd: null,
+        requestTypeCd: null,
+        stateCd: null,
+        submittedDate: null
       }
     }
   }

@@ -1,525 +1,452 @@
 <!--eslint-disable-->
 <template>
-  <div>
-    <div class="name-sect">
-      <div class="row">
-        <div class="col">
+  <v-layout wrap ref="CompName">
 
-          <div id="top-buttons">
+    <!--NAME CHOICES LIST-->
+    <v-flex lg6 bg-white py-2>
+      <v-container fs-18 ma-0 pa-0 ml-3>
+        <v-layout align-start
+                  wrap
+                  :class="getNameChoiceClasses(1)">
+          <v-flex shrink mr-2>1.</v-flex>
+          <v-flex grow id="name1" ma-0 pa-0>
+            {{ compName1.name }}
+            <CompNameIcon :state="compName1.state" />
+            <v-btn flat
+                   style="margin: -7px 0 0 0; padding: 0; color: var(--link);"
+                   v-if="is_undoable_1"
+                   @click="undoDecision(1)">Undo Decision</v-btn>
+          </v-flex>
+            <v-flex lg12 class="decision-text ml-4">{{ decision_1 }}</v-flex>
+        </v-layout>
+        <v-layout align-start
+                  :class="getNameChoiceClasses(2)"
+                  wrap>
+          <v-flex shrink mr-2>2.</v-flex>
+          <v-flex grow id="name2" ma-0 pa-0>
+            {{ compName2.name }}
+            <CompNameIcon :state="compName2.state" />
+            <v-btn flat
+                   style="margin: -7px 0 0 0; padding: 0; color: var(--link);"
+                   v-if="is_undoable_2"
+                   @click="undoDecision(2)">Undo Decision</v-btn>
+          </v-flex>
+          <v-flex lg12 class="decision-text ml-4">{{ decision_2 }}</v-flex>
+        </v-layout>
+        <v-layout align-start
+                  wrap
+                  :class="getNameChoiceClasses(3)">
+          <v-flex shrink mr-2>3.</v-flex>
+          <v-flex grow id="name3" ma-0 pa-0>
+            {{ compName3.name }}
+            <CompNameIcon :state="compName3.state" />
+            <v-btn flat
+                   style="margin: -7px 0 0 0; padding: 0; color: var(--link);"
+                   v-if="is_undoable_3"
+                   @click="undoDecision(3)">Undo Decision</v-btn>
+          </v-flex>
+            <v-flex lg12 class="decision-text ml-4">{{ decision_3 }}</v-flex>
+        </v-layout>
+      </v-container>
+    </v-flex>
 
-            <!-- GET NEXT button -->
-            <button v-shortkey="['alt', 'n']" @shortkey="getNextCompany()" class="btn btn-sm btn-secondary" id="examine-get-next-button"
-                    v-if="userIsAnExaminer && !is_making_decision && !is_my_current_nr"
-                    @click="getNextCompany()" >Get <u>N</u>ext</button>
+    <!--QUICK APPROVE/REJECT BUTTONS-->
+    <v-flex lg6 bg-white py-2>
+      <v-layout v-if="showQuickButtons" justify-end>
+        <v-flex shrink text-right>
+          <v-btn flat
+                 v-shortkey="['alt', 'a']"
+                 @shortkey="quickApprove()"
+                 id="examine-quick-approve-button"
+                 @click="quickApprove">
+            <img src="/static/images/buttons/quick-approve.png" /></v-btn>
+        </v-flex>
+        <v-flex shrink>
+          <v-btn flat
+                 v-shortkey="['alt', 'i']"
+                 @shortkey="rejectDistinctive()"
+                 id="examine-reject-distinctive-button"
+                 @click="rejectDistinctive">
+            <img src="/static/images/buttons/reject-dist.png" /></v-btn>
+        </v-flex>
+        <v-flex shrink>
+          <v-btn flat
+                 v-shortkey="['alt', 'e']"
+                 @shortkey="rejectDescriptive()"
+                 id="examine-reject-descriptive-button"
+                 @click="rejectDescriptive">
+            <img src="/static/images/buttons/reject-desc.png" /></v-btn>
+        </v-flex>
+      </v-layout>
+    </v-flex>
 
-            <!-- CANCEL button -->
-            <button class="btn btn-sm btn-danger" id="examine-cancel-button"
-                    v-if="canCancel && !is_making_decision && !is_cancelled && !is_approved_expired && !is_consumed" data-toggle="modal" data-target="#add-cancel-comment-modal">
-              Cancel Request</button>
+    <!--EXAMINATION AREA:  RECIPE CARDS DECISION INFO-->
+    <template v-if="!is_complete && !reservedOrCondReserved">
 
-            <!-- HOLD button -->
-            <button v-shortkey="['alt', 'h']" @shortkey="holdRequest()" class="btn btn-sm btn-warning" id="examine-hold-button"
-                    v-if="!is_making_decision && is_my_current_nr"
-                    @click="holdRequest()"><u>H</u>old</button>
+      <!--LEFT COLUMN:  CONFLICTS/CONDITIONS/HISTORY/TRADEMARKS LISTS-->
+      <v-flex lg6 py-4 pl-5 bg-grey style="z-index: 2">
+        <v-layout>
 
-            <!-- DECISION button -->
-            <button v-shortkey="['alt', 'd']" @shortkey="startDecision()" class="btn btn-sm btn-primary" id="examine-decide-button"
-                    v-if="userIsAnExaminer && !is_making_decision && !is_complete && is_my_current_nr && !is_name_decision_made"
-                    @click="startDecision()"><u>D</u>ecision</button>
-
-            <!-- ACCEPT/REJECT/CANCEL DECISION buttons -->
-            <button v-shortkey="['alt', 'a']" @shortkey="nameAccept()" class="btn btn-sm btn-primary" id="decision-approve-button"
-                    v-if="userIsAnExaminer && is_making_decision" @click="nameAccept()">
-              <span v-if="acceptance_will_be_conditional">Conditionally </span><u>A</u>pprove
-            </button>
-            <button v-shortkey="['alt', 'r']" @shortkey="nameReject()" class="btn btn-sm btn-danger" id="decision-reject-button"
-                    v-if="is_making_decision" @click="nameReject()" ><u>R</u>eject
-            </button>
-            <button v-shortkey="['alt', 'c']" @shortkey="is_making_decision=false" class="btn btn-sm btn-secondary" id="decision-cancel-button"
-                    v-if="is_making_decision" @click="is_making_decision=false">Ba<u>c</u>k
-            </button>
-
-            <!-- RE-OPEN (un-furnished) button -->
-            <button class="btn btn-sm btn-danger" id="examine-re-open-button"
-                    v-if="userCanEdit && is_complete && !is_furnished && !is_cancelled && !is_approved_expired" @click="reOpen()" >
-              Re-Open</button>
-
-            <!-- RESET (from furnished) button -->
-            <button class="btn btn-sm btn-danger" id="examine-reset-button"
-                    v-if="userCanEdit && is_complete && is_furnished && !is_cancelled && !is_approved_expired" @click="reset()">
-              RESET</button>
-
-            <!-- EXAMINE button - to claim/examine an NR that is on hold -->
-            <button class="btn btn-sm btn-primary" id="examine-button" v-if="can_claim"
-                    @click="claimNR()" >Examine</button>
-
-
-          </div>
-
-          <table>
-            <tr class="name-option"
-                v-bind:class="{'active-name-option': currentChoice==1,
-                               accepted: compName1.state == 'APPROVED'}">
-              <td>1.</td>
-              <td id="name1">
-                {{ compName1.name }}
-                <span class="name-state-icon" v-html="setIcon(compName1.state)"></span>
-                <button class="btn btn-undo" v-if="is_undoable_1"
-                        v-on:click="undoDecision(1)">Undo Decision</button>
-                <span class="decision-text"
-                        v-bind:class="{'completed-decision-text': is_complete}">{{ decision_1 }}</span>
-              </td>
-            </tr>
-            <tr class="name-option"
-                v-bind:class="{'active-name-option': currentChoice==2,
-                               accepted: compName2.state == 'APPROVED'}">
-              <td>2.</td>
-              <td id="name2">
-                {{ compName2.name }}
-                <span class="name-state-icon" v-html="setIcon(compName2.state)"></span>
-                <button class="btn btn-undo" v-if="is_undoable_2"
-                        v-on:click="undoDecision(2)">Undo Decision</button>
-                <span class="decision-text"
-                        v-bind:class="{'completed-decision-text': is_complete}">{{ decision_2 }}</span>
-              </td>
-            </tr>
-            <tr class="name-option"
-                v-bind:class="{'active-name-option': currentChoice==3,
-                               accepted: compName3.state == 'APPROVED'}">
-              <td>3.</td>
-              <td id="name3" >
-                {{ compName3.name }}
-                <span class="name-state-icon" v-html="setIcon(compName3.state)"></span>
-                <button class="btn btn-undo" v-if="is_undoable_3"
-                        v-on:click="undoDecision(3)">Undo Decision</button>
-                <span id="decision-text3" class="decision-text"
-                      v-bind:class="{'completed-decision-text': is_complete}">{{ decision_3 }}</span>
-              </td>
-            </tr>
-          </table>
-
-          <div>
-
-            <!-- QUICK APPROVE/REJECT BUTTONS -->
-            <span class="float-right" style="margin-left: 10px;" v-if="userIsAnExaminer && !is_making_decision && !is_complete && is_my_current_nr && !is_name_decision_made">
-              <button v-shortkey="['alt', 'a']" @shortkey="quickApprove()" class="btn btn-sm btn-outline-primary" id="examine-quick-approve-button"
-                      @click="quickApprove">Quick <u>A</u>pprove</button>
-              <button  v-shortkey="['alt', 'i']" @shortkey="rejectDistinctive()" class="btn btn-sm btn-outline-danger" id="examine-reject-distinctive-button"
-                      @click="rejectDistinctive">Reject D<u>i</u>stinctive</button>
-              <button v-shortkey="['alt', 'e']" @shortkey="rejectDescriptive()" class="btn btn-sm btn-outline-danger" id="examine-reject-descriptive-button"
-                      @click="rejectDescriptive">Reject D<u>e</u>scriptive</button>
-            </span>
-
-            <!-- MANUAL SEARCH -->
-            <div v-if="userCanEdit && !is_making_decision && !is_complete" id="manual-search">
-              <form class="form-inline" @submit.prevent="onSubmit">
-                <div class="manual-search-bar">
-                  <input ref="search" type="text" class="search form-control" v-model="searchStr"  v-shortkey="['alt', 's']" @shortkey="setFocus()" tabindex="1">
-                  <button class="btn-search" type="submit"><i class="fa fa-search" tabindex="8"/></button>
-                  <button class="btn-reset" v-if="is_running_manual_search" @click="resetSearchStr" tabindex="7"><i class="fa fa-times" /></button>
+          <v-flex lg8 mr-3>
+            <v-form @submit.prevent="onSubmit" id="regular-search-form">
+              <div style="display: flex;" class="examine-search-div" >
+                <v-text-field @click:append.prevent="resetSearchStr"
+                              @shortkey="setFocus"
+                              @focus="$root.$emit('setconflictfocus', 'regular')"
+                              :append-icon="searchStr !== currentName ? 'clear' : ''"
+                              autocomplete="off"
+                              class="examine-search"
+                              ref="regularsearchfield"
+                              id="regular-search-field"
+                              v-model="searchStr"
+                              v-shortkey="['alt', 's']"/>
+                <div class="search-icon mt-auto mb-auto">
+                  <v-btn flat
+                         icon
+                         id="regular-search-button"
+                         color="white"
+                         class="m-1"
+                         @click="onSubmit">
+                    <v-icon id="regular-search-icon">search</v-icon>
+                  </v-btn>
                 </div>
-                <input ref="advanced-search" type="text" class="advanced-search form-control" placeholder="Exact Phrase" v-model="exactPhrase">
-              </form>
-            </div>
-          </div>
+              </div>
+            </v-form>
+          </v-flex>
 
-        </div>
+          <!--EXACT MATCH SEARCH FIELD-->
+          <v-flex lg4>
+            <v-form @submit.prevent="onSubmit" id="exact-search-form">
+              <div style="display: flex;" class="examine-search-div">
+                <div style="width: 100%" >
+                  <v-text-field @click:append="resetExactSearchStr"
+                                :append-icon="exactPhrase ? 'clear' : ''"
+                                autocomplete="off"
+                                @focus="$root.$emit('setconflictfocus', 'exact')"
+                                class="examine-search"
+                                placeholder="exact phrase"
+                                ref="exactsearchfield"
+                                id="exact-search-field"
+                                name="exact-search"
+                                v-model="exactPhrase" />
+                </div>
+                <div class="search-icon mt-auto mb-auto">
+                  <v-btn flat
+                         icon
+                         id="exact-search-button"
+                         color="white"
+                         class="m-1"
+                         @click="onSubmit('exact-search')">
+                    <v-icon id="exact-search-icon">search</v-icon>
+                  </v-btn>
+                </div>
+              </div>
+            </v-form>
+          </v-flex>
 
-      </div>
+        </v-layout>
+        <v-layout mt-3 wrap>
+          <v-flex ma-0 pa-0>
+            <RecipeArea id="name-examination" />
+          </v-flex>
+        </v-layout>
+      </v-flex>
 
-    </div>
-
-    <!-- CANCEL COMMENT popup -->
-    <div class="modal fade" id="add-cancel-comment-modal" tabindex="-1" role="dialog">
-      <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Please give a comment to explain why this NR is being CANCELLED</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-            <textarea id="cancel-comment-text" class="form-control" rows="10"
-                      v-model="cancel_comment_display"></textarea>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-sm btn-secondary"
-                    data-dismiss="modal" @click="cancelNrCancel">Cancel</button>
-            <button type="button" id="cancel-nr-after-comment-button" class="btn btn-sm btn-danger" disabled="true"
-                    data-dismiss="modal" @click="cancelNr">CANCEL REQUEST</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-
-  </div>
+      <!--RIGHT TWO COLUMNS: EXAMINATION AREA INFO-->
+      <v-flex lg6 py-4 bg-grey>
+        <Decision v-if="is_making_decision" />
+      </v-flex>
+    </template>
+  </v-layout>
 </template>
 
 <script>
 /* eslint-disable */
+  import Decision from '@/components/application/Examine/Decision'
+  import RecipeArea from '@/components/application/Examine/Recipe/RecipeArea'
+  import CompNameIcon from './CompNameIcon'
+
   export default {
     name: 'CompName',
-    data: function () {
+    components: { Decision, RecipeArea, CompNameIcon },
+    data() {
       return {
-        searchStr: '',
-        exactPhrase: '',
-        retval: [],
-        is_running_manual_search: false,
+        searchTimeout: null,
         add_comment_display: "",
         cancel_comment_display: "",
+        exactPhrase: '',
+        is_running_manual_search: false,
+        retval: [],
         searching: false,
+        searchStr: '',
       }
     },
+    mounted() {
+      if (this.$store.getters.nrNumber == null) {
+        this.$store.dispatch('getpostgrescompNo')
+      }
+      // set manual search string based on current name - fixes bug related to leaving
+      // and coming back to same NR
+      this.searching = true
+      this.setManualSearchStr(this.currentName)
+      this.exactPhrase = ''
+      this.$root.$on('setcompnamefocus', this.setOrBlurFocus)
+    },
     computed: {
-      decision_made: {
-        get: function () {
-          return this.$store.getters.decision_made;
-        },
-        set: function (value) {
-          this.$store.commit('decision_made', value);
-        }
-      },
-      currentState() {
-        return this.$store.getters.currentState;
-      },
-      userId() {
-        return this.$store.getters.userId;
-      },
-      userIsAnExaminer() {
-        return this.$store.getters.userHasApproverRole;
-      },
-      userCanEdit() {
-        return this.$store.getters.userHasEditRole;
-      },
       canCancel() {
-        return this.userCanEdit;
-      },
-      is_my_current_nr() {
-        return this.$store.getters.is_my_current_nr;
-      },
-      is_complete() {
-        return this.$store.getters.is_complete;
-      },
-      is_furnished() {
-        if (this.$store.getters.furnished === "Y") return true;
-        return false;
-      },
-      is_cancelled() {
-        if (this.$store.getters.currentState === "CANCELLED") return true;
-        return false;
-      },
-      is_approved_expired() {
-        // if there is no expiry date, this NR is not approved-expired
-        if (this.$store.getters.expiryDate == null) return false;
-
-        let expired_date = new Date(this.$store.state.expiryDate);
-        let today = new Date();
-        console.log('***');
-        console.log(this.$store.getters.currentState);
-        console.log(expired_date);
-        if (this.$store.getters.currentState === "APPROVED" && today > expired_date) return true;
-        return false;
-      },
-      is_consumed() {
-        if (this.consumptionDate != null) return true;
-        else return false;
-      },
-      is_editing() {
-        return  this.$store.getters.is_editing;
-      },
-      is_making_decision: {
-        get: function() {
-          return this.$store.getters.is_making_decision;
-        },
-        set: function(value) {
-          this.$store.commit('is_making_decision', value);
-        }
-      },
-      is_name_decision_made() {
-        // is a decision already made for the current name? Happens right after reset/re-open.
-        if (this.currentNameObj.state !== 'NE') return true;
-        else return false;
-      },
-      acceptance_will_be_conditional() {
-        return this.$store.getters.acceptance_will_be_conditional;
-      },
-      can_claim() {
-        console.log('got to can_claim with status ' + this.currentState);
-        // can this user claim the NR? Based on state.
-        if (this.userIsAnExaminer && ['DRAFT', 'HOLD'].indexOf(this.currentState) > -1) return true;
-        else return false;
+        return this.userCanEdit
       },
       compName1() {
-        return this.$store.getters.compName1;
-      },
-      compName2() {
-        return this.$store.getters.compName2;
-      },
-      compName3() {
-        return this.$store.getters.compName3;
+        return this.$store.getters.compName1
       },
       compName1State() {
-        return this.$store.getters.compName1.state;
+        return this.$store.getters.compName1.state
+      },
+      compName2() {
+        return this.$store.getters.compName2
       },
       compName2State() {
-        return this.$store.getters.compName2.state;
+        return this.$store.getters.compName2.state
+      },
+      compName3() {
+        return this.$store.getters.compName3
       },
       compName3State() {
-        return this.$store.getters.compName3.state;
+        return this.$store.getters.compName3.state
       },
-       decision_1() {
-        return this.decisionReasonOrConflictList(this.compName1);
-      },
-       decision_2() {
-        return this.decisionReasonOrConflictList(this.compName2);
-      },
-       decision_3() {
-        return this.decisionReasonOrConflictList(this.compName3);
-      },
-      currentNameObj: {
-        get: function() {
-          return this.$store.getters.currentNameObj;
+      currentChoice: {
+        get() {
+          return this.$store.getters.currentChoice
         },
-        set: function (value) {
-          this.$store.commit('currentNameObj', value);
+        set(value) {
+          this.$store.commit('currentChoice', value)
         }
       },
       currentName() {
-        return this.$store.getters.currentName;
+        return this.$store.getters.currentName
       },
-      currentChoice: {
-        get: function () {
-          return this.$store.getters.currentChoice
+      currentNameObj: {
+        get() {
+          return this.$store.getters.currentNameObj
         },
-        set: function (value) {
-          this.$store.commit('currentChoice', value);
+        set(value) {
+          this.$store.commit('currentNameObj', value)
         }
+      },
+      currentRecipeCard() {
+        return this.$store.getters.currentRecipeCard
+      },
+      currentState() {
+        return this.$store.getters.currentState
+      },
+      decision_1() {
+        return this.decisionReasonOrConflictList(this.compName1)
+      },
+      decision_2() {
+        return this.decisionReasonOrConflictList(this.compName2)
+      },
+      decision_3() {
+        return this.decisionReasonOrConflictList(this.compName3)
+      },
+      decision_made: {
+        get() {
+          return this.$store.getters.decision_made
+        },
+        set(value) {
+          this.$store.commit('decision_made', value)
+        }
+      },
+      reservedOrCondReserved () {
+        if (['COND-RESERVE', 'RESERVED'].includes(this.$store.getters.nr_status)) return true
+        return false
+      },
+      is_complete() {
+        return this.$store.getters.is_complete
+      },
+      is_editing() {
+        return  this.$store.getters.is_editing
+      },
+      is_making_decision: {
+        get() {
+          return this.$store.getters.is_making_decision
+        },
+        set(value) {
+          this.$store.commit('is_making_decision', value)
+        }
+      },
+      is_my_current_nr() {
+        return this.$store.getters.is_my_current_nr
+      },
+      is_name_decision_made() {
+        // is a decision already made for the current name? Happens right after reset/re-open.
+        if (this.currentNameObj.state !== 'NE') return true
+        else return false
       },
       is_undoable_1() {
         // first test generic reasons why a name would or wouldn't be undoable
-        var undoable = this.is_undoable(this.compName1);
+        let undoable = this.is_undoable(this.compName1)
 
         if (undoable) {
           // if name choices 2 and 3 have not been decided, then 1 is undoable
           if ((this.compName2.state == 'NE' || this.compName2.state == null) &&
-              (this.compName3.state == 'NE' || this.compName3.state == null)) {
-            undoable = true;
+            (this.compName3.state == 'NE' || this.compName3.state == null)) {
+            undoable = true
           }
-          else undoable = false;
+          else undoable = false
         }
 
-        return undoable;
+        return undoable
       },
       is_undoable_2() {
         // first test generic reasons why a name would or wouldn't be undoable
-        var undoable = this.is_undoable(this.compName2);
+        let undoable = this.is_undoable(this.compName2)
 
         if (undoable) {
           // if name choice 3 has not been decided, then 2 is undoable
-          if (this.compName3.state == 'NE' || this.compName3.state == null) {
-            undoable = true;
+          if (this.compName3.state == 'NE' || this.compName3.state == null ) {
+            undoable = true
           }
-          else undoable = false;
+          else undoable = false
         }
 
-        return undoable;
+        return undoable
       },
       is_undoable_3() {
         // first test generic reasons why a name would or wouldn't be undoable
-        var undoable = this.is_undoable(this.compName3);
+        let undoable = this.is_undoable(this.compName3)
 
-        return undoable;
+        return undoable
+      },
+      is_viewing() {
+        return this.$store.state.is_header_shown
       },
       listDecisionReasons() {
-        return this.$store.getters.listDecisionReasons;
+        return this.$store.getters.listDecisionReasons
       },
-      internalComments: {
-        get: function() {
-          return this.$store.getters.internalComments;
-        },
-        set: function(value) {
-          this.$store.commit('internalComments', value);
-        }
+      showQuickButtons() {
+        return !this.is_complete && this.is_making_decision && this.userIsAnExaminer && this.is_my_current_nr
       },
-      consumptionDate() {
-        return this.$store.getters.consumptionDate;
+      userCanEdit() {
+        return this.$store.getters.userHasEditRole
+      },
+      userIsAnExaminer() {
+        return this.$store.getters.userHasApproverRole
       },
     },
-    mounted() {
-      console.log('Compname Mounted')
-      if(this.$store.getters.nrNumber == null){
-        console.log('Mounted->get next NR number')
-        this.$store.dispatch('getpostgrescompNo');
+    watch: {
+      cancel_comment_display(val) {
+        if (val)
+          $("#cancel-nr-after-comment-button").prop('disabled', false);
+        else
+          $("#cancel-nr-after-comment-button").prop('disabled', true);
+      },
+      currentName(val) {
+        this.searching = true
+        this.setManualSearchStr(val)
+        this.exactPhrase = ''
+      },
+      nrNumber(val) {
+        if (val != null) { this.runManualRecipe()}
+      },
+      searchStr(val) {
+        if (this.searching) {
+          this.runManualRecipe()
+          this.searching = false
+        }
       }
-      this.setFocus();
-
-      // set manual search string based on current name - fixes bug related to leaving
-      // and coming back to same NR
-      this.searching = true;
-      this.setManualSearchStr(this.currentName);
-      this.exactPhrase = '';
     },
     methods: {
-      /**
-       * decisionReasonOrConflictList:  gets the decision reason(s) whether or not there's anything in the decision text field.
-       * In some older NRs, there is no decision reason text.  In these cases we want to display the list of conflicts instead.
-       */
-       decisionReasonOrConflictList: function (compname) {
-
-          if (!compname) {
-              return;
-          }
-
-          if (this.is_complete) {
-
-              if (compname.decision_text) {
-                return compname.decision_text;
-              } else {
-                return this.getConflictList(compname);
-              }
+      decisionReasonOrConflictList(compname) {
+        /* method gets the decision reason(s) whether or not there's anything in the decision text field.  In some
+         older NRs, there is no decision reason text.  In these cases we want to display the listof conflicts instead */
+        if (!compname) {
+          return
+        }
+        if (this.is_complete) {
+          if (compname.decision_text) {
+            return compname.decision_text
           } else {
-              return compname.decision_text
+            return this.getConflictList(compname)
           }
+        } else {
+          return compname.decision_text
+        }
       },
       getConflictList(compname) {
-          if (!compname.conflict1) {
-              return;
-          }
+        if (!compname.conflict1) return
 
-          let reasons = `Rejected due to conflicts:\n${compname.conflict1}`;
-          if (compname.conflict2) {
-              reasons += ", " + compname.conflict2;
-          }
-          if (compname.conflict3) {
-              reasons += ", " + compname.conflict3;
-          }
-
-          return reasons;
-      },
-      getNextCompany() {
-        this.$store.dispatch('resetValues');
-        this.searching = true;
-        this.$store.dispatch('getpostgrescompNo');
-      },
-      startDecision() {
-        this.$store.state.is_making_decision = true;
-      },
-      nameAccept() {
-        this.$store.commit('decision_made', 'APPROVED');
-        this.$store.commit('currentCondition', null);
-      },
-      nameReject() {
-        this.$store.commit('decision_made', 'REJECTED');
-        this.$store.commit('currentCondition', null);
-      },
-      reOpen() {
-        /* Workflow:
-        If EXAMINER:
-         - move to INPROGRESS
-        If EDITOR (ADMIN):
-         - move to INPROGRESS with edit screen open
-         - upon save/cancel, move to DRAFT
-         */
-        if (this.userIsAnExaminer) {
-          this.$store.commit('currentState', 'INPROGRESS');
+        let reasons = `Rejected due to conflicts:\n${compname.conflict1}`
+        if (compname.conflict2) {
+          reasons += ", " + compname.conflict2
         }
-        else {
-          this.$store.commit('currentState', 'INPROGRESS');
-
-          // initialize user in edit mode, with previous state set so NR gets set back to draft
-          //  when user is done changing name, adding comment, etc.
-          this.$store.state.previousStateCd = 'DRAFT';
-          this.$store.state.is_editing = true;
+        if (compname.conflict3) {
+          reasons += ", " + compname.conflict3
         }
-
-        // set reset flag so name data is managed between Namex and NRO correctly
-        this.$store.commit('hasBeenReset', true);
-
-        // update request in database
-        this.$store.dispatch('updateRequest');
+        return reasons
       },
-      reset() {
-        /* Workflow:
-        If EXAMINER:
-         - move to INPROGRESS
-        If EDITOR (ADMIN):
-         - move to INPROGRESS with edit screen open
-         - upon save/cancel, move to DRAFT
-         */
-        if (this.userIsAnExaminer) {
-          this.$store.commit('currentState', 'INPROGRESS');
+      getNameChoiceClasses(num) {
+        let classes = ['name-option']
+        if (this.currentChoice == num) { classes.push('active-name-option') }
+        if (this[`compName${num}`].state === 'APPROVED' || this[`compName${ num }`].state === 'CONDITION') {
+          classes.push('accepted')
         }
-        else {
-          this.$store.commit('currentState', 'INPROGRESS');
-
-          // initialize user in edit mode, with previous state set so NR gets set back to draft
-          //  when user is done changing name, adding comment, etc.
-          this.$store.state.previousStateCd = 'DRAFT';
-          this.$store.state.is_editing = true;
-        }
-
-        this.$store.commit('furnished', 'N');
-
-        // update request in database and NRO
-        this.$store.dispatch('updateRequest');
-      },
-      claimNR() {
-        this.$store.dispatch('updateNRState', 'INPROGRESS');
-      },
-      holdRequest() {
-        this.$store.dispatch('updateNRState', 'HOLD');
-      },
-      runManualRecipe(){
-        console.log("Running manual recipe on " + this.searchStr + '/' + this.exactPhrase);
-        this.$store.dispatch('runManualRecipe', {searchStr:this.searchStr, exactPhrase:this.exactPhrase});
-      },
-      setIcon(name_state) {
-        if (name_state == 'REJECTED') {
-          return '<i class="fa fa-times icon-rejected"></i>';
-        }
-        else if (name_state == 'APPROVED' || name_state == 'CONDITION') {
-          return '<i class="fa fa-check icon-accepted"></i>';
-        }
-        else return '';
-      },
-      undoDecision(name_number) {
-        console.log(name_number);
-        this.$store.dispatch('undoDecision', name_number);
-
-        // set the undone name choice to the current (actionable) choice
-        if (name_number == 1) this.currentNameObj = this.compName1;
-        if (name_number == 2) this.currentNameObj = this.compName2;
-        if (name_number == 3) this.currentNameObj = this.compName3;
-
+        return classes
       },
       is_undoable(name) {
-
         // if the NR is closed in any way, a name is not undoable - the NR will have to be
         // re-opened first.
+        if (!this.userIsAnExaminer) return false
 
-        if (!this.userIsAnExaminer) return false;
-
-        if (!this.is_my_current_nr) return false;
+        if (!this.is_my_current_nr) return false
 
         // if the NR is furnished, nothing is undoable
-        if (this.$store.state.furnished === 'Y')  return false;
+        if (this.$store.state.furnished === 'Y')  return false
 
         // if this name is complete (ie: anything other than NE) it's undoable
-        if (name.state == 'NE' || name.state == null) return false;
+        if (name.state == 'NE' || name.state == null) return false
 
-        return true;
+        return true
+      },
+      nameAcceptReject() {
+        if (this.decision_made === 'APPROVED') {
+          this.currentNameObj.state = 'APPROVED'
+        }
+        else {
+          this.currentNameObj.state = 'REJECTED'
+        }
+        // send decision to API and reset flags
+        this.$store.dispatch('nameAcceptReject')
+        this.decision_made = null
+      },
+      onSubmit(event) {
+        if (event.target.id && event.target.id.includes('exact-search')) {
+          if (this.exactPhrase) {
+            this.runManualRecipe()
+            this.is_running_manual_search = true
+            return
+          } else if (!this.exactPhrase) {
+            event.preventDefualt()
+            event.stopImmediatePropagation()
+            return
+          }
+        }
+        if (this.searchStr != this.currentName) {
+          this.is_running_manual_search = true
+        }
+        this.runManualRecipe()
       },
       quickApprove() {
-        this.currentNameObj.decision_text = ''
-        console.log('quickApprove')
-
+        if (this.$store.state.consentRequiredByUser) {
+          this.$root.$emit('name-accept-reject')
+          return
+        }
+        if (!this.$store.state.consentRequiredByUser) {
+          this.$store.commit('setSelectedConflicts', [])
+        }
         this.decision_made = 'APPROVED'
         this.nameAcceptReject()
       },
       rejectDescriptive() {
-
         this.currentNameObj.decision_text = 'Require descriptive second word or phrase * E.G. ' +
           'Construction, Gardening, Investments, Holdings, Etc.'
         this.decision_made = 'REJECTED'
@@ -534,126 +461,84 @@
         this.decision_made = 'REJECTED'
         this.nameAcceptReject()
       },
-      onSubmit()
-      {
-        this.$store.dispatch('resetValues');
-        this.$store.dispatch('runManualRecipe', {searchStr:this.searchStr, exactPhrase:this.exactPhrase});
-
-        if (this.searchStr != this.currentName) this.is_running_manual_search = true;
-      },
-      resetSearchStr(){
-        this.searching = true;
-        this.setManualSearchStr(this.currentName);
-        this.exactPhrase = '';
-        this.is_running_manual_search = false;
-      },
-      nameAcceptReject() {
-
-        // save decision
-        console.log('nameAcceptReject decision_made:' + this.decision_made)
-        if (this.decision_made == 'APPROVED') {
-          this.currentNameObj.state = 'APPROVED';
+      resetSearchStr() {
+        if (!this.is_running_manual_search) {
+          this.setManualSearchStr(this.currentName)
+          return
         }
-        else {
-          this.currentNameObj.state = 'REJECTED';
-        }
-
-        // send decision to API and reset flags
-        this.$store.dispatch('nameAcceptReject');
-        this.decision_made = null;
-        this.is_making_decision = false;
+        this.searching = true
+        this.setManualSearchStr(this.currentName)
+        this.exactPhrase = ''
       },
-      setFocus: function() {
-        if(this.$refs.search) {
-          this.$refs.search.focus();
+      resetExactSearchStr() {
+        this.exactPhrase = ''
+        if (this.is_running_manual_search) {
+          this.runManualRecipe()
         }
+      },
+      runManualRecipe() {
+        $('.conflict-container-spinner').removeClass('hidden')
+        this.$store.dispatch('resetExaminationArea').then(() => {
+          this.$store.dispatch('runManualRecipe', { searchStr: this.searchStr, exactPhrase: this.exactPhrase })
+        })
+      },
+      setOrBlurFocus({ref, type}) {
+        if (this.$refs[ref]) {
+          if (type === 'blur') {
+            this.$refs[ref].blur()
+            return
+          }
+          this.$refs[ref].focus()
+        }
+      },
+      setFocus() {
+        this.$refs.regularsearchfield.focus()
+        this.$root.$emit('setconflictfocus', 'regular')
       },
       setManualSearchStr(val) {
-        console.log('setManualSearchStr() called with ' + val);
         this.searchStr =  val;
       },
-      addNewComment(value) {
-        // create new comment object with just text, and add it to list of comments in data structure
-        var newCommentData = {
-          comment: value,
-          examiner: this.$store.state.examiner
-        };
-        this.internalComments = this.internalComments.concat(newCommentData);
-      },
-      cancelNr() {
-        this.addNewComment(this.cancel_comment_display);
-        this.$store.dispatch('cancelNr', 'CANCELLED');
-      },
-      cancelNrCancel() {
-        this.cancel_comment_display = "";
-        $("#cancel-comment-text").prop('disabled', false); // TODO need this?
+      undoDecision(name_number) {
+        this.$store.dispatch('undoDecision', name_number);
+
+        // set the undone name choice to the current (actionable) choice
+        if (name_number == 1) this.currentNameObj = this.compName1
+        if (name_number == 2) this.currentNameObj = this.compName2
+        if (name_number == 3) this.currentNameObj = this.compName3
       },
     },
-    watch: {
-      cancel_comment_display: function(val) {
-        console.log('cancel_comment_display watcher fired:' + val)
-        if (val)
-          $("#cancel-nr-after-comment-button").prop('disabled', false);
-        else
-          $("#cancel-nr-after-comment-button").prop('disabled', true);
-      },
-      currentName: function (val) {
-        console.log('CompName.currentName watcher fired:' + val)
-        this.searching = true;
-        this.setManualSearchStr(val);
-        this.exactPhrase = '';
-      },
-      nrNumber: function (val) {
-        console.log('CompName.nrNumber watcher fired:' + val)
-        if(val != null){ this.runManualRecipe()}
-      },
-      searchStr: function (val) {
-        console.log('searchStr watcher fired: ' + val)
-        if (this.searching) {
-          this.runManualRecipe();
-          this.searching = false;
-        }
-      }
-    }
   }
 </script>
 
 
 <style scoped>
-  .name-sect {
+
+
+  .examine-search-div:focus-within {
+    box-shadow: 0 0 3px 2px var(--cyan) !important;
   }
+
   .name-option {
-    font-size:1.3em;
-    text-align: left;
-  }
-  .active-name-option{
-    font-weight: bold;
+    font-size: 17px;
+    margin-top: 6px !important;
+    margin-bottom: 0 !important;
   }
 
-  #top-buttons {
-    float: right;
-    margin: 10px 0 10px 10px;
-  }
-  #top-buttons button {
-    float: right;
-    margin-left: 5px;
+  .c-cyan {
+    color: var(--cyan)
   }
 
-  .name-option > td {
-    vertical-align: top;
-  }
   .name-option.accepted {
-    color: #007bff;
-    font-size: 20px;
+    color: var(--cyan);
   }
+
   .decision-text {
+    padding: 0;
+    margin: 0;
     font-size: 11px;
     width: 600px;
     position: relative;
     display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
 
   .completed-decision-text {
@@ -661,66 +546,23 @@
     white-space: pre-wrap;
   }
 
-  .manual-search-bar {
-    width: 70%;
-    margin-right: 5px;
+  .names-hide-details {
+    margin: 0;
+    padding: 8px 0 8px 0;
   }
 
-  .search {
-    width: 99%;
-    max-width: 700px;
-    min-width: 200px;
-    font-size: 16px;
+  .active-name-option {
+    font-weight: 600;
   }
 
-  .advanced-search {
-    font-size: 16px;
-    width: 20%;
-    min-width: 50px;
-    max-width: 300px;
+  .examine-search {
+    background-color: white;
+    border: 1px solid lightgrey !important;
+    font-size: 15px;
+    height: 40px;
+    margin-bottom: auto;
+    margin-top: auto;
+    padding: 5px 10px 5px 10px;
   }
 
-  #manual-search {
-    width: 100%;
-    max-width: 1030px;
-  }
-
-  #manual-search button {
-    width: 0.5%;
-    min-width: 20px;
-    max-width: 20px;
-    border: none;
-    background-color: transparent;
-    padding: 0;
-    color: #666;
-    margin-top: -1px;
-  }
-
-  .btn-search {
-    margin-left: -25px;
-  }
-
-  .btn-search .fa-search {
-    font-size: 14px;
-  }
-
-  .btn-reset {
-    margin-left: -40px;
-}
-</style>
-
-<!-- not scoped -->
-<style>
-  .name-state-icon .icon-rejected {
-    color: #c00;
-  }
-  .name-state-icon .icon-accepted {
-    color: #007bff;
-    font-size: 20px;
-  }
-
-  .btn-undo {
-    padding: 2px 5px;
-    font-size: 11px;
-  }
 </style>

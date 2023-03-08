@@ -7,13 +7,14 @@ import store from '@/store'
 const LandingPage = () => import(/* webpackChunkName: "home" */'@/components/LandingPage')
 const Signin = () => import(/* webpackChunkName: "signin" */'@/components/auth/Signin')
 const NameExamination = () => import(/* webpackChunkName: "nameexamination" */'@/components/application/NameExamination')
-const Find = () => import(/* webpackChunkName: "find" */'@/components/application/Find')
+const Transactions = () => import(/* webpackChunkName: "nameexamination" */'@/components/application/Transactions')
+const findFilter = () => import(/* webpackChunkName: "find" */'@/components/application/Find/findFilter')
 const Stats = () => import(/* webpackChunkName: "stats" */'@/components/application/Stats/Stats.vue')
 
 Vue.use(Router)
 Vue.use(Vuex)
 
-let router = new Router({
+const router = new Router({
   mode: 'history', // <-- removes the /#/
   routes: [
     {
@@ -40,8 +41,17 @@ let router = new Router({
       }
     },
     {
+      name: 'transactions',
+      component: Transactions,
+      path: '/transactions',
+      props: true,
+      meta: {
+        requiresAuth: false
+      }
+    },
+    {
       name: 'find',
-      component: Find,
+      component: findFilter,
       path: '/find',
       meta: {
         requiresAuth: true
@@ -60,15 +70,15 @@ let router = new Router({
 
 router.beforeResolve((to, from, next) => {
   if (to.matched.some(record => record.meta.requiresAuth)) {
-    console.log('Authorization check')
+
     // this route requires auth,
     // if not Authenticated, redirect to login page.
-    let auth = sessionStorage.getItem('AUTHORIZED')
+    let auth = sessionStorage.getItem('AUTHORIZED')    
     if (auth == 'true') {
-      console.log('Authorized')
+
       next()
     } else {
-      console.log('Not authorized, redirect to /')
+
       store.dispatch("checkError",{"message": "Not Authorized please login."});
       next({
         path: '/'

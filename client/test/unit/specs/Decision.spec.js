@@ -1,292 +1,298 @@
-/* eslint-disable */
-import Vue from 'vue';
-
-Vue.use(require('vue-shortkey'))
-import Decision from '@/components/application/Examine/Decision';
+import Vue from 'vue'
+import Decision from '@/components/application/Examine/Decision'
 import store from '@/store'
+import { cleanState } from '../../features/specs/support/clean.state'
+import { createApiSandbox } from '../sandbox/Generic-api-stubs.js'
+import { sleep } from '@/utils/sleep'
 
-describe('Decision.vue', () => {
+describe('Testing Decision.vue', () => {
+  let data = {}
+  let makeDecision
+  const Constructor = Vue.extend(Decision)
 
-  let instance;
-  let vm;
+  beforeAll(() => {
+    //There are no api calls that actually influence the outcomes of these tests.  They will all pass without
+    //the sandbox, however, have included it to prevent console errors.
+    data.api = createApiSandbox()
+  })
 
-  let makeDecision = function (decision) {
-    // Fake a decision being made, and return the decision text from before and after the decision
-    // was made.
+  afterAll(() => {
+    data.api.restore()
+  })
 
-    // make the decision
-    var customer_message_initial = instance.customer_message_display;
-    instance.decision_made = decision;
-    instance.nameAcceptReject();
-    var customer_message_after_decision = instance.customer_message_display;
+  beforeEach(async () => {
+    store.replaceState(cleanState())
+    data.instance = new Constructor({ store })
+    data.vm = data.instance.$mount()
 
-    // return the pre and post decision text for comparisons
-    return [customer_message_initial, customer_message_after_decision];
-  }
+    makeDecision = (decision) => {
+      // Fake a decision being made, and return the decision text from before and after the decision
+      // was made.
+      var customer_message_initial = data.instance.customer_message_display
+      data.instance.decision_made = decision
+      data.instance.nameAcceptReject()
+      var customer_message_after_decision = data.instance.customer_message_display
 
-  beforeEach(() => {
-    const Constructor = Vue.extend(Decision);
-    instance = new Constructor({store: store});
+      // return the pre and post decision text for comparisons
+      return [customer_message_initial, customer_message_after_decision]
+    }
 
-    instance.decision_made = null;
+    await sleep(1000)
+  })
 
-    // stub $refs for function call that is not part of these tests
-    instance.$refs = {
-      decisioncomments: {
-        addNewComment() {
-          return null;
-        }
+  describe('Testing the Decision customer message text:  starting with conflicts requiring consent', () => {
+    beforeEach(async () => {
+      let { state } = data.vm.$store
+      state.is_making_decision = true
+      state.userId = 'Joe'
+      state.examiner = 'Joe'
+      state.currentNameObj = {
+        name: 'blah',
+        choice: null,
       }
-    };
-  });
-
-  describe('When conditions have been selected with consent required', () => {
-
-    beforeEach(() => {
-
-      instance.conditions_selected = [
+      state.selectedConditions = [
         {
-          "id": 223,
-          "phrase": "DOCTOR",
-          "allow_use": true,
-          "consent_required": false,
-          "instructions": "Sample doctor condition text, not requiring consent."
+          'id': 223,
+          'phrase': 'DOCTOR',
+          'allow_use': true,
+          'consent_required': false,
+          'instructions': 'Sample doctor condition text, not requiring consent.',
         },
         {
-          "id": 1,
-          "phrase": "TEST",
-          "allow_use": true,
-          "consent_required": true,
-          "instructions": "Sample condition requiring consent."
-        }
-      ];
-    });
+          'id': 1,
+          'phrase': 'TEST',
+          'allow_use': true,
+          'consent_required': true,
+          'instructions': 'Sample condition requiring consent.',
+        },
+      ]
+      await sleep(1000)
+    })
 
-    it('Displays each condition in customer message', () => {
-      expect(instance.customer_message_display).toContain("Sample doctor condition text, not requiring consent.");
-      expect(instance.customer_message_display).toContain("Sample condition requiring consent.");
-    });
+    test('It displays each condition in customer message', () => {
+      expect(data.vm.customer_message_display).toContain('Sample doctor condition text, not requiring consent.')
+      expect(data.vm.customer_message_display).toContain('Sample condition requiring consent.')
+    })
 
-    it('Sets conditional approval flag', () => {
-      expect(instance.acceptance_will_be_conditional).toBe(true);
-    });
+    test('The acceptanceWillBeConditional getter is set correctly', () => {
+      expect(data.vm.$store.getters.acceptanceWillBeConditional).toBe(true)
+    })
 
-    it('Saves the decision text as built by examiner upon APPROVED decision made', () => {
-      var customer_message_initial, customer_message_after_decision;
-      [customer_message_initial, customer_message_after_decision] = makeDecision("APPROVED");
+    test('It saves the decision text as built by examiner upon APPROVED decision made', () => {
+      let customer_message_initial, customer_message_after_decision
+      [customer_message_initial, customer_message_after_decision] = makeDecision('APPROVED')
 
-      expect(customer_message_after_decision).toBe(customer_message_initial);
-    });
+      expect(customer_message_after_decision).toBe(customer_message_initial)
+    })
 
-    it('Saves the decision text as built by examiner upon REJECTED decision made', () => {
-      var customer_message_initial, customer_message_after_decision;
-      [customer_message_initial, customer_message_after_decision] = makeDecision("REJECTED");
+    test('It saves the decision text as built by examiner upon REJECTED decision made', () => {
+      let customer_message_initial, customer_message_after_decision
+      [customer_message_initial, customer_message_after_decision] = makeDecision('REJECTED')
 
-      expect(customer_message_after_decision).toBe(customer_message_initial);
-    });
-  });
+      expect(customer_message_after_decision).toBe(customer_message_initial)
+    })
+  })
 
   describe('When conditions have been selected with NO consent required', () => {
-
-    beforeEach(() => {
-
-      instance.conditions_selected = [
+    beforeEach(async () => {
+      let { state } = data.vm.$store
+      state.is_making_decision = true
+      state.userId = 'Joe'
+      state.examiner = 'Joe'
+      state.currentNameObj = {
+        name: 'blah',
+        choice: null,
+      }
+      state.selectedConditions = [
         {
-          "id": 223,
-          "phrase": "DOCTOR",
-          "allow_use": true,
-          "consent_required": false,
-          "instructions": "Sample doctor condition text, not requiring consent."
+          'id': 223,
+          'phrase': 'DOCTOR',
+          'allow_use': true,
+          'consent_required': false,
+          'instructions': 'Sample doctor condition text, not requiring consent.',
         },
         {
-          "id": 1,
-          "phrase": "TEST",
-          "allow_use": true,
-          "consent_required": false,
-          "instructions": "Sample condition NOT requiring consent."
-        }
-      ];
-    });
+          'id': 1,
+          'phrase': 'TEST',
+          'allow_use': true,
+          'consent_required': false,
+          'instructions': 'Sample condition NOT requiring consent.',
+        },
+      ]
+      await sleep(1000)
+    })
 
-    it('Does not set conditional approval flag', () => {
-      expect(instance.acceptance_will_be_conditional).toBe(false);
-    });
-  });
+    test('Does not set conditional approval flag', () => {
+      expect(data.vm.$store.getters.acceptanceWillBeConditional).toBe(false)
+    })
+  })
 
   describe('When "consent required" condition has been selected WITHOUT conflicts', () => {
+    beforeEach (async () => {
+      let { state } = data.vm.$store
+      state.is_making_decision = true
+      state.userId = 'Joe'
+      state.examiner = 'Joe'
+      state.currentNameObj = {
+        name: 'blah',
+        choice: null,
+      }
+      state.consentRequiredByUser = true
+      await sleep(1000)
+    })
 
-    it('Contains "consent required" message', () => {
+    test('Contains "consent required" message', () => {
+      expect(data.vm.customer_message_display).toContain('Consent Required')
+    })
 
-      instance.conditions_selected = [
-        {
-          "id": "CONSENTREQUIRED",
-          "consent_required": true,
-          "display_string": "Consent Required",
-          "instructions": "Consent Required.",
-        },
-      ];
-      expect(instance.customer_message_display).toContain("Consent Required.");
-    });
+    test('Saves the decision text as built by examiner upon APPROVED decision made', () => {
+      let customer_message_initial, customer_message_after_decision
+      [customer_message_initial, customer_message_after_decision] = makeDecision('APPROVED')
 
-    it('Saves the decision text as built by examiner upon APPROVED decision made', () => {
-      var customer_message_initial, customer_message_after_decision;
-      [customer_message_initial, customer_message_after_decision] = makeDecision("APPROVED");
+      expect(customer_message_after_decision).toBe(customer_message_initial)
+    })
 
-      expect(customer_message_after_decision).toBe(customer_message_initial);
-    });
+    test('Saves the decision text as built by examiner upon REJECTED decision made', () => {
+      let customer_message_initial, customer_message_after_decision
+      [customer_message_initial, customer_message_after_decision] = makeDecision('REJECTED')
 
-    it('Saves the decision text as built by examiner upon REJECTED decision made', () => {
-      var customer_message_initial, customer_message_after_decision;
-      [customer_message_initial, customer_message_after_decision] = makeDecision("REJECTED");
-
-      expect(customer_message_after_decision).toBe(customer_message_initial);
-    });
-
-  });
+      expect(customer_message_after_decision).toBe(customer_message_initial)
+    })
+  })
 
   describe('When "consent required" condition has been selected WITH conflicts', () => {
-    beforeEach(() => {
-
-      instance.conditions_selected = [
+    beforeEach(async () => {
+      let { state } = data.vm.$store
+      state.is_making_decision = true
+      state.userId = 'Joe'
+      state.examiner = 'Joe'
+      state.currentNameObj = {
+        name: 'blah',
+        choice: null,
+      }
+      state.selectedConflicts = [
         {
-          "id": "CONSENTREQUIRED",
-          "consent_required": true,
-          "display_string": "Consent Required",
-          "instructions": "Consent Required.",
+          'nrNumber': '0299669',
+          'text': 'DR. EARL J. MCDONALD INC.',
+          'source': 'CORP',
         },
-      ];
-      instance.conflicts_selected = [
-        {
-          "nrNumber": "0299669",
-          "text": "DR. EARL J. MCDONALD INC.",
-          "source": "CORP",
-        }
-      ];
+      ]
+      state.consentRequiredByUser = true
+      await sleep(1000)
+    })
 
-    });
+    test('Conflict message includes "consent required" and not "rejected"', () => {
+      expect(data.vm.customer_message_display).toContain('Consent required')
+      expect(data.vm.customer_message_display).not.toContain('Rejected')
+    })
 
-    it('Does not contain "consent required" standalone message', () => {
-      expect(instance.customer_message_display).not.toContain("Consent Required.");
-    });
+    test('Saves the decision text as built by examiner upon APPROVED decision made', () => {
+      let customer_message_initial, customer_message_after_decision
+      [customer_message_initial, customer_message_after_decision] = makeDecision('APPROVED')
 
-    it('Conflict message includes "consent required" and not "rejected"', () => {
-      expect(instance.customer_message_display).toContain("Consent required from DR. EARL J. MCDONALD INC.");
-      expect(instance.customer_message_display).not.toContain("Rejected due to conflict with DR. EARL J. MCDONALD INC.");
-    });
+      expect(customer_message_after_decision).toBe(customer_message_initial)
+    })
 
-    it('Saves the decision text as built by examiner upon APPROVED decision made', () => {
-      var customer_message_initial, customer_message_after_decision;
-      [customer_message_initial, customer_message_after_decision] = makeDecision("APPROVED");
+    test('Saves the decision text as built by examiner upon REJECTED decision made', () => {
+      let customer_message_initial, customer_message_after_decision
+      [customer_message_initial, customer_message_after_decision] = makeDecision('REJECTED')
 
-      expect(customer_message_after_decision).toBe(customer_message_initial);
-    });
-
-    it('Saves the decision text as built by examiner upon REJECTED decision made', () => {
-      var customer_message_initial, customer_message_after_decision;
-      [customer_message_initial, customer_message_after_decision] = makeDecision("REJECTED");
-
-      expect(customer_message_after_decision).toBe(customer_message_initial);
-    });
-
-  });
+      expect(customer_message_after_decision).toBe(customer_message_initial)
+    })
+  })
 
   describe('When conflicts have been selected without "consent required" condition', () => {
-    beforeEach(() => {
-
-      instance.decision_made = null;
-
-      instance.conflicts_selected = [
+    beforeEach(async () => {
+      let { state } = data.vm.$store
+      state.is_making_decision = true
+      state.userId = 'Joe'
+      state.examiner = 'Joe'
+      state.currentNameObj = {
+        name: 'blah',
+        choice: null,
+      }
+      state.selectedConflicts = [
         {
-          "nrNumber": "0299669",
-          "text": "DR. EARL J. MCDONALD INC.",
-          "source": "CORP",
+          'nrNumber': '0299669',
+          'text': 'DR. EARL J. MCDONALD INC.',
+          'source': 'CORP',
         },
         {
-          "nrNumber": "111",
-          "text": "SAMPLE CONFLICT",
-          "source": "CORP",
-        }
-      ];
+          'nrNumber': '1234',
+          'text': 'SAMPLE CONFLICT',
+          'source': 'CORP',
+        },
+      ]
+      await sleep(1000)
+    })
 
-    });
+    test('Conflict message includes "rejected" and not "consent required"', () => {
+      expect(data.vm.customer_message_display).toContain('Rejected due to conflict with DR. EARL J. MCDONALD INC.')
+    })
 
-    it('Conflict message includes "rejected" and not "consent required"', () => {
-      expect(instance.customer_message_display).not.toContain("Consent required from from DR. EARL J. MCDONALD INC.");
-      expect(instance.customer_message_display).toContain("Rejected due to conflict with DR. EARL J. MCDONALD INC.");
-    });
+    test('Contains message for each conflicts', () => {
+      expect(data.vm.customer_message_display).toContain('Rejected due to conflict with DR. EARL J. MCDONALD INC.')
+      expect(data.vm.customer_message_display).toContain('Rejected due to conflict with SAMPLE CONFLICT')
+    })
 
-    it('Contains message for each conflicts', () => {
-      expect(instance.customer_message_display).toContain("Rejected due to conflict with DR. EARL J. MCDONALD INC.");
-      expect(instance.customer_message_display).toContain("Rejected due to conflict with SAMPLE CONFLICT");
+    test('Clears the decision text re. conflicts upon APPROVED decision made', () => {
+      let customer_message_initial, customer_message_after_decision
+      [customer_message_initial, customer_message_after_decision] = makeDecision('APPROVED')
 
-    });
+      expect(customer_message_after_decision).not.toContain('Rejected due to conflict with DR. EARL J. MCDONALD INC.')
+      expect(customer_message_after_decision).not.toContain('Rejected due to conflict with SAMPLE CONFLICT')
+    })
 
-    it('Clears the decision text re. conflicts upon APPROVED decision made', () => {
-      var customer_message_initial, customer_message_after_decision;
-      [customer_message_initial, customer_message_after_decision] = makeDecision("APPROVED");
+    test('Saves the decision text as built by examiner upon REJECTED decision made', () => {
+      let customer_message_initial, customer_message_after_decision
+      [customer_message_initial, customer_message_after_decision] = makeDecision('REJECTED')
 
-      expect(customer_message_after_decision).not.toContain("Rejected due to conflict with DR. EARL J. MCDONALD INC.");
-      expect(customer_message_after_decision).not.toContain("Rejected due to conflict with SAMPLE CONFLICT");
-    });
-
-    it('Saves the decision text as built by examiner upon REJECTED decision made', () => {
-      var customer_message_initial, customer_message_after_decision;
-      [customer_message_initial, customer_message_after_decision] = makeDecision("REJECTED");
-
-      expect(customer_message_after_decision).toBe(customer_message_initial);
-    });
-
-  });
+      expect(customer_message_after_decision).toBe(customer_message_initial)
+    })
+  })
 
   describe('When there are possible conflicts dropdown', () => {
-    beforeEach(() => {
-
-      instance.$store.state.exactMatchesConflicts = [
+    beforeEach(async () => {
+      let { state } = data.vm.$store
+      state.is_making_decision = true
+      state.userId = 'Joe'
+      state.examiner = 'Joe'
+      state.currentNameObj = {
+        name: 'blah',
+        choice: null,
+      }
+      state.exactMatchesConflicts = [
         {
-          text: 'conflict1',
+          text: 'test1',
           nrNumber: 'NR1111',
-          source: 'CORP'
-        }
-      ];
-      instance.$store.state.synonymMatchesConflicts = [
+          source: 'CORP',
+        },
+      ]
+      state.synonymMatchesConflicts = [
         {
-          text: 'conflict2',
+          text: 'test2',
           nrNumber: 'NR2222',
-          source: 'CORP'
-        }
-      ];
+          source: 'CORP',
+        },
+      ]
+      await sleep(1000)
+    })
 
-      vm = instance.$mount();
-      setTimeout(() => {
-        done();
-      }, 100)
-
-    });
-
-    it('displays the conflicts in exactMatch and synonymMatch in the dropdown', () => {
-      expect(instance.conflictList).toEqual(
+    test('displays the conflicts in exactMatch and synonymMatch in the dropdown', () => {
+      expect(data.vm.conflictList).toEqual(
         [
           {
-            text: 'conflict1',
+            text: 'test1',
             nrNumber: 'NR1111',
-            source: 'CORP'
+            source: 'CORP',
           },
           {
-            text: 'conflict2',
+            text: 'test2',
             nrNumber: 'NR2222',
-            source: 'CORP'
-          }
-        ]
-      );
-
-      expect(vm.$el.querySelector('div.multiselect:nth-child(2) div.multiselect__content-wrapper ul li:nth-child(1)').textContent).toEqual('conflict1 - NR1111 ');
-      expect(vm.$el.querySelector('div.multiselect:nth-child(2) div.multiselect__content-wrapper ul li:nth-child(2)').textContent).toEqual('conflict2 - NR2222 ');
-    });
-
-  });
-
-});
-
-
-
-
+            source: 'CORP',
+          },
+        ],
+      )
+    })
+  })
+})
