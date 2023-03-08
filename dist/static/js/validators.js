@@ -1,1 +1,0 @@
-import moment from"moment";export function isNotBlankSpace(t){return!!t&&""!=t.replace(/\s/g,"")}export function isActualDate(t){return moment(t).isValid()}export function isValidFormat(t){return 10===t.length&&"-"===t.charAt(4)&&"-"===t.charAt(7)}export function isFutureDate(t){let e=new moment;return moment(t,"YYYY-MM-DD").isAfter(e)}

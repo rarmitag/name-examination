@@ -33,6 +33,11 @@ module.exports = merge(common, {
       chunkFilename: '[id].css',
     }),
 
+    new webpack.SourceMapDevToolPlugin({
+        filename: '[name].map'         
+      }
+    )
+    
     // Only update what has changed on hot reload
     //new webpack.HotModuleReplacementPlugin(),    
   ], 

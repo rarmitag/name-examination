@@ -1,1 +1,0 @@
-class nrdetails{constructor(s){this.state=s}}

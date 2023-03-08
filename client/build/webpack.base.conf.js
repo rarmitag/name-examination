@@ -79,7 +79,7 @@ module.exports = {
         },
       ],
     }),
-
+    
     /*
     // Generates an HTML file from a template
     // Generates deprecation warning: https://github.com/jantimon/html-webpack-plugin/issues/1501
@@ -93,8 +93,9 @@ module.exports = {
     new HtmlWebpackPlugin({     
       template: path.client + '/index.html' // template file     
     }),
-  ],
 
+  ],
+    
   // Determine how modules within the project are treated
   module: {
     rules: [
@@ -123,7 +124,7 @@ module.exports = {
       // Stylus: 
       {
         test: /\.(styl)$/,
-        use: ['stylus-loader','style-loader', 'css-loader']
+        use: ['style-loader', 'css-loader','stylus-loader']
       },
 
       // Images: Copy image files to build folder
