@@ -1,5 +1,6 @@
 'use strict'
 const path = require('path')
+const utils = require('./utils')
 const webpack = require('webpack')
 
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
@@ -128,10 +129,26 @@ module.exports = {
       },
 
       // Images: Copy image files to build folder
-      {test: /\.(?:ico|gif|png|jpg|jpeg)$/i, type: 'asset/resource'},
+      // {test: /\.(?:ico|gif|png|jpg|jpeg)$/i, type: 'asset/resource'},
+      {
+        test: /\.(?:ico|gif|png|jpg|jpeg)$/i,
+        loader: 'url-loader',
+        options: {
+          limit: 10000,
+          name: utils.assetsPath('media/[name].[hash:7].[ext]')
+        }
+      },
 
       // Fonts and SVGs: Inline files
-      {test: /\.(woff(2)?|eot|ttf|otf|svg|)$/, type: 'asset/inline'},
+      // {test: /\.(woff(2)?|eot|ttf|otf|svg|)$/, type: 'asset/inline'},
+      { 
+        test: /\.(woff(2)?|eot|ttf|otf|)(\?.*)?$/, 
+        loader: 'url-loader',
+        options: {
+          limit: 10000,
+          name: utils.assetsPath('media/[name].[hash:7].[ext]')
+        }
+      },
 
     ],
   },

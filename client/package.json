@@ -9,7 +9,7 @@
     "nodeweb": "node --trace-warnings build/build.js",
     "start": "webpack serve --config build/webpack.dev.conf.js --progress",
     "webpackbuild": "webpack --config build/webpack.prod.conf.js",
-    "build": "node build/build.js",
+    "build": "node build/build.js --stats-error-details",
     "prod": "http-server ./dist -a localhost -p 8080 -o",
     "serveprod": "webpack serve --config build/webpack.prod.conf.js --progress"
   },
@@ -70,6 +70,7 @@
     "core-js": "^3.10.0",
     "moment": "^2.24.0",
     "node-polyfill-webpack-plugin": "^2.0.1",
+    "url-loader": "^4.1.1",
     "vue": "^2.6.12",
     "vue-fragment": "^1.6.0",
     "vue-router": "^3.4.9",

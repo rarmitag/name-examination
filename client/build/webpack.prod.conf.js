@@ -36,10 +36,10 @@ module.exports = merge(common, {
     new webpack.SourceMapDevToolPlugin({
         filename: '[name].map'         
       }
-    )
+    ),
     
     // Only update what has changed on hot reload
-    //new webpack.HotModuleReplacementPlugin(),    
+    // new webpack.HotModuleReplacementPlugin(),    
   ], 
   module: {    
     rules: [
