@@ -8,8 +8,8 @@
   "scripts": {
     "nodeweb": "node --trace-warnings build/build.js",
     "start": "webpack serve --config build/webpack.dev.conf.js --progress",
-    "build": "webpack --config build/webpack.prod.conf.js",
-    "nodebuild": "node build/build.js",
+    "webpackbuild": "webpack --config build/webpack.prod.conf.js",
+    "build": "node build/build.js",
     "prod": "http-server ./dist -a localhost -p 8080 -o",
     "serveprod": "webpack serve --config build/webpack.prod.conf.js --progress"
   },
