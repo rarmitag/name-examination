@@ -115,7 +115,7 @@ module.exports = {
         use: [
         // Note: Only style-loader works for me !!!
 		    // 'vue-style-loader',
-		      'style-loader',
+		      // 'style-loader',
           {loader: 'css-loader', options: {sourceMap: true, importLoaders: 1, esModule: false}},
           {loader: 'postcss-loader', options: {sourceMap: true}},
           {loader: 'sass-loader', options: {sourceMap: true}},
@@ -125,7 +125,7 @@ module.exports = {
       // Stylus: 
       {
         test: /\.(styl)$/,
-        use: ['style-loader', 'css-loader','stylus-loader']
+        use: ['style-loader', 'css-loader', 'stylus-loader']
       },
 
       // Images: Copy image files to build folder
