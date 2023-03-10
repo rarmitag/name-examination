@@ -44,13 +44,13 @@ module.exports = {
 
   // Where webpack outputs the assets and bundles
   //path: path.build,
-  /*
+  
   output: {
     path: path.resolve(__dirname,"../dist"),
-    filename: '[name].bundle.js',    
+    filename: '[name].bundle.js',      
     publicPath: '/',
   },  
-  */
+  
   // Customize the webpack build process
   plugins: [
     
@@ -114,8 +114,8 @@ module.exports = {
         test: /\.(scss|css)$/,
         use: [
         // Note: Only style-loader works for me !!!
-		    // 'vue-style-loader',
-		      // 'style-loader',
+		      // 'vue-style-loader',
+		      'style-loader',
           {loader: 'css-loader', options: {sourceMap: true, importLoaders: 1, esModule: false}},
           {loader: 'postcss-loader', options: {sourceMap: true}},
           {loader: 'sass-loader', options: {sourceMap: true}},
@@ -125,7 +125,7 @@ module.exports = {
       // Stylus: 
       {
         test: /\.(styl)$/,
-        use: ['style-loader', 'css-loader', 'stylus-loader']
+        use: [ 'style-loader', 'css-loader', 'stylus-loader']
       },
 
       // Images: Copy image files to build folder
