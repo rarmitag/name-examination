@@ -114,14 +114,15 @@ module.exports = {
         test: /\.(scss|css)$/,
         use: [
         // Note: Only style-loader works for me !!!
-		      // 'vue-style-loader',
+		      'vue-style-loader',
 		      'style-loader',
-          {loader: 'css-loader', options: {sourceMap: true, importLoaders: 1, esModule: false}},
+          {loader: 'css-loader', options: {sourceMap: true}},
           {loader: 'postcss-loader', options: {sourceMap: true}},
-          {loader: 'sass-loader', options: {sourceMap: true}},
+          {loader: 'sass-loader', options: {sourceMap: true}}         
         ],
       },
-
+      // {loader: 'css-loader', options: {sourceMap: true, importLoaders: 1, esModule: false}},
+      
       // Stylus: 
       {
         test: /\.(styl)$/,
