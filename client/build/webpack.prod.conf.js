@@ -16,8 +16,9 @@ module.exports = merge(common, {
   mode: 'production',
   
   // Control how source maps are generated
-  devtool: 'source-map',
- 
+  // devtool: 'source-map',
+  devtool: '',
+
   plugins: [
     //Stop process errors
     new webpack.DefinePlugin({
@@ -51,7 +52,7 @@ module.exports = merge(common, {
             loader: 'css-loader',
             options: {
               importLoaders: 2,
-              sourceMap: true,
+              sourceMap: false,
             },
           },
           'sass-loader',
