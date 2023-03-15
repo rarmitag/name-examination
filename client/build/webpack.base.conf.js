@@ -6,6 +6,7 @@ const webpack = require('webpack')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
 const vueConfig = require('./vue.config.js')
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
@@ -95,6 +96,17 @@ module.exports = {
       template: path.client + '/index.html' // template file     
     }),
 
+    // Extracts CSS into separate files
+    // Note: style-loader is for development, MiniCssExtractPlugin is for production
+    new MiniCssExtractPlugin({
+      filename: 'styles/[name].[contenthash].css',
+      chunkFilename: '[id].css',
+    }),
+
+    new webpack.SourceMapDevToolPlugin({
+      filename: '[name].map'         
+    },
+  ),
   ],
     
   // Determine how modules within the project are treated
@@ -116,13 +128,12 @@ module.exports = {
         // Note: Only style-loader works for me !!!
 		      'vue-style-loader',
 		      'style-loader',
-          {loader: 'css-loader', options: {sourceMap: true}},
+          {loader: 'css-loader', options: {sourceMap: true, importLoaders: 1, esModule: false}},
           {loader: 'postcss-loader', options: {sourceMap: true}},
           {loader: 'sass-loader', options: {sourceMap: true}}         
         ],
       },
-      // {loader: 'css-loader', options: {sourceMap: true, importLoaders: 1, esModule: false}},
-      
+            
       // Stylus: 
       {
         test: /\.(styl)$/,
