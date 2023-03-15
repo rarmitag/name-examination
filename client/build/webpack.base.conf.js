@@ -31,17 +31,17 @@ module.exports = {
   entry: [ 'whatwg-fetch', path.src + '/main.js'],
   
   resolve: {
-        extensions: ['.vue','.js','.json'],
-		        alias: {
-                'components': path.resolve(__dirname, '../src/components/'),
-			          'images': path.resolve(__dirname, '../src/images/'),
-		            'styles': path.resolve(__dirname, '../src/styles/'),
-                'router': path.resolve(__dirname, '../src/router/'),
-                '@': path.resolve('src'),
-                'vue$': 'vue/dist/vue.esm.js'            
-		 }
+      extensions: ['.vue','.js','.json'],
+		  alias: {
+          'components': path.resolve(__dirname, '../src/components/'),
+			    'images': path.resolve(__dirname, '../src/images/'),
+		      'styles': path.resolve(__dirname, '../src/styles/'),
+          'router': path.resolve(__dirname, '../src/router/'),
+          '@': path.resolve('src'),
+          'vue$': 'vue/dist/vue.esm.js'            
+		  }
   },
-  //            'vue$': path.resolve(__dirname, '../node_modules/vue/dist/vue.common.js')            
+  // 'vue$': path.resolve(__dirname, '../node_modules/vue/dist/vue.common.js')            
 
   // Where webpack outputs the assets and bundles
   //path: path.build,
@@ -94,19 +94,8 @@ module.exports = {
     */
     new HtmlWebpackPlugin({     
       template: path.client + '/index.html' // template file     
-    }),
-
-    // Extracts CSS into separate files
-    // Note: style-loader is for development, MiniCssExtractPlugin is for production
-    new MiniCssExtractPlugin({
-      filename: 'styles/[name].[contenthash].css',
-      chunkFilename: '[id].css',
-    }),
-
-    new webpack.SourceMapDevToolPlugin({
-      filename: '[name].map'         
-    },
-  ),
+    }),   
+  
   ],
     
   // Determine how modules within the project are treated
@@ -120,10 +109,16 @@ module.exports = {
       },
     
       {test: /\.js$/, exclude: /node_modules/, use: ['babel-loader']},
+      
+      {
+        test: /\.css$/i,
+        use: [MiniCssExtractPlugin.loader, "css-loader"],
+      },
 
+      // test: /\.(scss|css)$/,
       // Styles: Inject CSS into the head with source maps
       {
-        test: /\.(scss|css)$/,
+        test: /\.(scss)$/,
         use: [
         // Note: Only style-loader works for me !!!
 		      'vue-style-loader',

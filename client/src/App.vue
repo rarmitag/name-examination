@@ -1,5 +1,4 @@
 /* eslint-disable */
-
 <template>
   <div style="height: 100%;">
     <v-app >
@@ -125,7 +124,7 @@ export default {
 
 <style>
   /*app-wide import of css variables to use in scoped and inline style*/
-  @import '~/../../static/css/variables.css';
+  @import '../static/css/variables.css';
   .error-modal {
     background-color: var(--priority);
     color: white;

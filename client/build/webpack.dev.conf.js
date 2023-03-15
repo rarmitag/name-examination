@@ -5,6 +5,8 @@ const webpack = require('webpack')
 const { merge } = require('webpack-merge')
 const common = require('./webpack.base.conf.js')
 
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+
 console.log('Build ' + path.build)
 
 module.exports = merge(common, {
@@ -38,5 +40,12 @@ module.exports = merge(common, {
     
     // Only update what has changed on hot reload
     new webpack.HotModuleReplacementPlugin(),
+
+    // Extracts CSS into separate files
+    // Note: style-loader is for development, MiniCssExtractPlugin is for production
+    new MiniCssExtractPlugin({
+      filename: 'styles/[name].[contenthash].css',
+      chunkFilename: '[id].css',
+    }),    
   ],
 })
