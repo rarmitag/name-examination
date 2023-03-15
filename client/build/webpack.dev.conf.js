@@ -4,9 +4,7 @@ const path = require('path')
 const webpack = require('webpack')
 const { merge } = require('webpack-merge')
 const common = require('./webpack.base.conf.js')
-
-const MiniCssExtractPlugin = require('mini-css-extract-plugin')
-
+// const common = require('./webpack.prod.conf.js')
 console.log('Build ' + path.build)
 
 module.exports = merge(common, {
@@ -15,7 +13,7 @@ module.exports = merge(common, {
 
   // Control how source maps are generated
   // devtool: 'inline-source-map',
-  devtool: 'hidden-nosources-source-map',
+  devtool: 'source-map',
     
   // Enable: It is possible testing in IE 11, but reload / replacement will break due to a bug in webpack 5 !
   // Disable: It is possible to use hot relad / replacement but not using IE 11 !
@@ -40,12 +38,5 @@ module.exports = merge(common, {
     
     // Only update what has changed on hot reload
     new webpack.HotModuleReplacementPlugin(),
-
-    // Extracts CSS into separate files
-    // Note: style-loader is for development, MiniCssExtractPlugin is for production
-    new MiniCssExtractPlugin({
-      filename: 'styles/[name].[contenthash].css',
-      chunkFilename: '[id].css',
-    }),    
   ],
 })

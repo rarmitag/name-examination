@@ -6,7 +6,6 @@ const webpack = require('webpack')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
 const vueConfig = require('./vue.config.js')
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
@@ -31,17 +30,17 @@ module.exports = {
   entry: [ 'whatwg-fetch', path.src + '/main.js'],
   
   resolve: {
-      extensions: ['.vue','.js','.json'],
-		  alias: {
-          'components': path.resolve(__dirname, '../src/components/'),
-			    'images': path.resolve(__dirname, '../src/images/'),
-		      'styles': path.resolve(__dirname, '../src/styles/'),
-          'router': path.resolve(__dirname, '../src/router/'),
-          '@': path.resolve('src'),
-          'vue$': 'vue/dist/vue.esm.js'            
-		  }
+        extensions: ['.vue','.js','.json'],
+		        alias: {
+                'components': path.resolve(__dirname, '../src/components/'),
+			          'images': path.resolve(__dirname, '../src/images/'),
+		            'styles': path.resolve(__dirname, '../src/styles/'),
+                'router': path.resolve(__dirname, '../src/router/'),
+                '@': path.resolve('src'),
+                'vue$': 'vue/dist/vue.esm.js'            
+		 }
   },
-  // 'vue$': path.resolve(__dirname, '../node_modules/vue/dist/vue.common.js')            
+  //            'vue$': path.resolve(__dirname, '../node_modules/vue/dist/vue.common.js')            
 
   // Where webpack outputs the assets and bundles
   //path: path.build,
@@ -94,8 +93,8 @@ module.exports = {
     */
     new HtmlWebpackPlugin({     
       template: path.client + '/index.html' // template file     
-    }),   
-  
+    }),
+
   ],
     
   // Determine how modules within the project are treated
@@ -109,26 +108,20 @@ module.exports = {
       },
     
       {test: /\.js$/, exclude: /node_modules/, use: ['babel-loader']},
-      
-      {
-        test: /\.css$/i,
-        use: [MiniCssExtractPlugin.loader, "css-loader"],
-      },
 
-      // test: /\.(scss|css)$/,
       // Styles: Inject CSS into the head with source maps
       {
-        test: /\.(scss)$/,
+        test: /\.(scss|css)$/,
         use: [
         // Note: Only style-loader works for me !!!
-		      'vue-style-loader',
+		      // 'vue-style-loader',
 		      'style-loader',
           {loader: 'css-loader', options: {sourceMap: true, importLoaders: 1, esModule: false}},
           {loader: 'postcss-loader', options: {sourceMap: true}},
-          {loader: 'sass-loader', options: {sourceMap: true}}         
+          {loader: 'sass-loader', options: {sourceMap: true}},
         ],
       },
-            
+
       // Stylus: 
       {
         test: /\.(styl)$/,
