@@ -85,7 +85,14 @@ module.exports = {
     new HtmlWebpackPlugin({     
       template: path.client + '/index.html', // template file     
       filename: 'index.html', // output file
-    })  
+    }),
+    
+    // Extracts CSS into separate files
+    // Note: style-loader is for development, MiniCssExtractPlugin is for production
+    new MiniCssExtractPlugin({
+      filename: 'styles/[name].[contenthash].css',
+      chunkFilename: '[id].css',
+    }),
     
   ],
     
@@ -125,13 +132,13 @@ module.exports = {
       {
         test: /\.(scss|css)$/,
         use: [
-        // Note: Only style-loader works for me !!!          
-		      'vue-style-loader',
-		      'style-loader',
+        // Note: Only style-loader works for me !!!  
+        MiniCssExtractPlugin.loader,        
+		      //'vue-style-loader',
+		      //'style-loader',
           {loader: 'css-loader', options: {sourceMap: true, importLoaders: 1, esModule: false}},
           {loader: 'postcss-loader', options: {sourceMap: true}},
-          {loader: 'sass-loader', options: {sourceMap: true}}
-          //MiniCssExtractPlugin.loader
+          {loader: 'sass-loader', options: {sourceMap: true}}          
         ],
       },      
        
