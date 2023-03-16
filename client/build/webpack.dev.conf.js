@@ -9,7 +9,7 @@ console.log('Build ' + path.build)
 
 module.exports = merge(common, {
   // Set the mode to development or production
-  mode: 'development',
+  mode: 'production',
 
   // Control how source maps are generated
   // devtool: 'inline-source-map',
@@ -32,7 +32,7 @@ module.exports = merge(common, {
   plugins: [
     new webpack.DefinePlugin({
       'process.env': { 
-        NODE_ENV: '"development"'
+        NODE_ENV: '"production"'
       }  
     }), 
     

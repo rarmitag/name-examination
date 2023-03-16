@@ -6,13 +6,14 @@ const webpack = require('webpack')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
 const vueConfig = require('./vue.config.js')
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
 const vueLoaderConfig = require('./vue-loader.conf')
 
 function resolve (dir) {
-  //return path.join(__dirname, '..', dir)
+  // return path.join(__dirname, '..', dir)
   return path.join(__dirname, dir)
 }
 
@@ -95,6 +96,13 @@ module.exports = {
       template: path.client + '/index.html' // template file     
     }),
 
+    // Extracts CSS into separate files
+    // Note: style-loader is for development, MiniCssExtractPlugin is for production
+    new MiniCssExtractPlugin({
+      filename: 'styles/[name].[contenthash].css',
+      chunkFilename: '[id].css',
+    }),
+    
   ],
     
   // Determine how modules within the project are treated
@@ -109,6 +117,7 @@ module.exports = {
     
       {test: /\.js$/, exclude: /node_modules/, use: ['babel-loader']},
 
+      /*
       // Styles: Inject CSS into the head with source maps
       {
         test: /\.(scss|css)$/,
@@ -119,6 +128,23 @@ module.exports = {
           {loader: 'css-loader', options: {sourceMap: true, importLoaders: 1, esModule: false}},
           {loader: 'postcss-loader', options: {sourceMap: true}},
           {loader: 'sass-loader', options: {sourceMap: true}},
+        ],
+      },
+      */
+
+      {
+        test: /\.(scss|css)$/,
+        use: [
+          MiniCssExtractPlugin.loader,
+          {
+            loader: 'css-loader',
+            options: {
+              importLoaders: 2,
+              sourceMap: false,
+            },
+          },
+          'sass-loader',
+          'postcss-loader',          
         ],
       },
 

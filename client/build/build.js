@@ -7,7 +7,7 @@ const path = require('path')
 const chalk = require('chalk')
 const webpack = require('webpack')
 const config = require('../config')
-const utils = require('./utils.js')
+// const utils = require('./utils.js')
 
 const webpackConfig = require('./webpack.dev.conf') 
 
