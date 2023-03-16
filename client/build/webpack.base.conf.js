@@ -81,27 +81,11 @@ module.exports = {
         },
       ],
     }),
-    
-    /*
-    // Generates an HTML file from a template
-    // Generates deprecation warning: https://github.com/jantimon/html-webpack-plugin/issues/1501
-    new HtmlWebpackPlugin({
-      title: 'Names Examination',
-      favicon: path.client + 'static/images/favicon.ico',
-      template: path.client + '/index.html', // template file
-      filename: 'index.html', // output file
-    }),
-    */
+        
     new HtmlWebpackPlugin({     
-      template: path.client + '/index.html' // template file     
-    }),
-
-    // Extracts CSS into separate files
-    // Note: style-loader is for development, MiniCssExtractPlugin is for production
-    new MiniCssExtractPlugin({
-      filename: 'styles/[name].[contenthash].css',
-      chunkFilename: '[id].css',
-    }),
+      template: path.client + '/index.html', // template file     
+      filename: 'index.html', // output file
+    })  
     
   ],
     
@@ -116,37 +100,41 @@ module.exports = {
       },
     
       {test: /\.js$/, exclude: /node_modules/, use: ['babel-loader']},
-
+      
       /*
+      {
+          test: /\.(scss|css)$/,
+          use: [
+            MiniCssExtractPlugin.loader,
+            {
+              loader: 'css-loader',
+              options: {
+                importLoaders: 2,
+                sourceMap: false,
+              },
+            },
+            'vue-style-loader',
+            'style-loader',
+            'sass-loader',
+            'postcss-loader'                    
+          ],
+      },       
+      */
+
       // Styles: Inject CSS into the head with source maps
       {
         test: /\.(scss|css)$/,
         use: [
-        // Note: Only style-loader works for me !!!
-		      // 'vue-style-loader',
+        // Note: Only style-loader works for me !!!          
+		      'vue-style-loader',
 		      'style-loader',
           {loader: 'css-loader', options: {sourceMap: true, importLoaders: 1, esModule: false}},
           {loader: 'postcss-loader', options: {sourceMap: true}},
-          {loader: 'sass-loader', options: {sourceMap: true}},
+          {loader: 'sass-loader', options: {sourceMap: true}}
+          //MiniCssExtractPlugin.loader
         ],
-      },
-      */
-
-      {
-        test: /\.(scss|css)$/,
-        use: [
-          MiniCssExtractPlugin.loader,
-          {
-            loader: 'css-loader',
-            options: {
-              importLoaders: 2,
-              sourceMap: false,
-            },
-          },
-          'sass-loader',
-          'postcss-loader',          
-        ],
-      },
+      },      
+       
 
       // Stylus: 
       {

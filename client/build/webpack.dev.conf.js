@@ -4,7 +4,7 @@ const path = require('path')
 const webpack = require('webpack')
 const { merge } = require('webpack-merge')
 const common = require('./webpack.base.conf.js')
-// const common = require('./webpack.prod.conf.js')
+
 console.log('Build ' + path.build)
 
 module.exports = merge(common, {

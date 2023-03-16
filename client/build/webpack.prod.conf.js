@@ -33,34 +33,10 @@ module.exports = merge(common, {
       filename: 'styles/[name].[contenthash].css',
       chunkFilename: '[id].css',
     }),
-
-    new webpack.SourceMapDevToolPlugin({
-        filename: '[name].map'         
-      }
-    ),
-    
+   
     // Only update what has changed on hot reload
-    // new webpack.HotModuleReplacementPlugin(),    
-  ], 
-  module: {    
-    rules: [
-      {
-        test: /\.(scss|css)$/,
-        use: [
-          MiniCssExtractPlugin.loader,
-          {
-            loader: 'css-loader',
-            options: {
-              importLoaders: 2,
-              sourceMap: false,
-            },
-          },
-          'sass-loader',
-          'postcss-loader',          
-        ],
-      },
-    ],
-  }, 
+    new webpack.HotModuleReplacementPlugin(),    
+  ],    
   optimization: {
     minimize: true,
     minimizer: [new CssMinimizerPlugin(), "..."],
