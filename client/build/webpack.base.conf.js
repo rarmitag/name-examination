@@ -133,9 +133,8 @@ module.exports = {
         test: /\.(scss|css)$/,
         use: [
         // Note: Only style-loader works for me !!!  
-        MiniCssExtractPlugin.loader,        
-		      //'vue-style-loader',
-		      //'style-loader',
+          'vue-style-loader',
+		      'style-loader',
           {loader: 'css-loader', options: {sourceMap: true, importLoaders: 1, esModule: false}},
           {loader: 'postcss-loader', options: {sourceMap: true}},
           {loader: 'sass-loader', options: {sourceMap: true}}          
