@@ -11,7 +11,6 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const vueConfig = require('./vue.config.js')
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
 const vueLoaderConfig = require('./vue-loader.conf')
-
 function resolve (dir) {
   // return path.join(__dirname, '..', dir)
   return path.join(__dirname, dir)
@@ -107,8 +106,7 @@ module.exports = {
       },
     
       {test: /\.js$/, exclude: /node_modules/, use: ['babel-loader']},
-      
-      /*
+      /*      
       {
           test: /\.(scss|css)$/,
           use: [
@@ -125,22 +123,20 @@ module.exports = {
             'sass-loader',
             'postcss-loader'                    
           ],
-      },       
+      },      
       */
-
+     
       // Styles: Inject CSS into the head with source maps
       {
         test: /\.(scss|css)$/,
         use: [
-        // Note: Only style-loader works for me !!!  
-          'vue-style-loader',
-		      'style-loader',
-          {loader: 'css-loader', options: {sourceMap: true, importLoaders: 1, esModule: false}},
+           'vue-style-loader', 
+           'style-loader',       		                
+          {loader: 'css-loader', options: {sourceMap: true, importLoaders: 2, esModule: false}},
           {loader: 'postcss-loader', options: {sourceMap: true}},
           {loader: 'sass-loader', options: {sourceMap: true}}          
         ],
-      },      
-       
+      },        
 
       // Stylus: 
       {

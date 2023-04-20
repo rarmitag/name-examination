@@ -13,7 +13,7 @@ import store from './store'
 
 import 'vuetify/dist/vuetify.min.css'
 import '../static/stylus/overrides.styl'
-// import '@mdi/font/css/materialdesignicons.css'
+import '@mdi/font/css/materialdesignicons.css'
 
 Vue.use(Plugin)
 Vue.use(require('vue-shortkey'))
