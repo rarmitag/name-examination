@@ -1,4 +1,7 @@
+// import { defineStore } from 'pinia'
+// import { stateModel } from '@/store/state'
 import { Status } from '~/enums/nr-status'
+//#import { ...interfaces }
 import type {
   Trademark,
   Comment,
@@ -18,79 +21,412 @@ import type {
   Transaction,
 } from '~/types'
 
-import mockJson from './examine.mock.json'
-import requestTypes from '~/data/request_types.json'
-import requestTypeRulesJSON from '~/data/request_type_rules.json'
-import jurisdictionsData from '~/data/jurisdictions.json'
-import {
-  ConsentFlag,
-  EntityTypeCode,
-  RefundState,
-  RequestActionCode,
-  RequestTypeCode,
-} from '~/enums/codes'
-import { getTransactions, patchNameRequest } from '~/util/namex-api'
-import { sortNameChoices } from '~/util'
-import { DateTime } from 'luxon'
+export   const useStore = defineStore('examine', () => {
+  // State Model
+  const state = ref({ ...stateModel })
+  
+  function loadCompanyInfo(state, dbcompanyInfo) {
+    if (state.nrData && state.nrData.consent_dt) {
+      state.nrData.consent_dt = null
+    }
+    if (state.nrData && state.nrData.consentFlag) {
+      state.nrData.consentFlag = null
+    }
+    if (state.consentDateForEdit) {
+      state.consentDateForEdit = null
+    }
+    if ( !dbcompanyInfo || !dbcompanyInfo.names ) return
+    state.nrData = dbcompanyInfo
 
-export const useExamineStore = defineStore('examine', () => {
-  const mock = mockJson
+    if ( dbcompanyInfo.names.length == 0 ) {
+      return
+    }
+    // clear name choices 2 and 3 in case they are blank - ie: don't keep previous NR's data
+    state.compInfo.compNames.compName2.name = null
+    state.compInfo.compNames.compName2.state = null
+    state.compInfo.compNames.compName2.consumptionDate = null
+    state.compInfo.compNames.compName2.corpNum = null
+    state.compInfo.compNames.compName2.conflict1 = null
+    state.compInfo.compNames.compName2.conflict2 = null
+    state.compInfo.compNames.compName2.conflict3 = null
+    state.compInfo.compNames.compName2.conflict1_num = null
+    state.compInfo.compNames.compName2.conflict2_num = null
+    state.compInfo.compNames.compName2.conflict3_num = null
+    state.compInfo.compNames.compName2.decision_text = null
+    state.compInfo.compNames.compName3.name = null
+    state.compInfo.compNames.compName3.state = null
+    state.compInfo.compNames.compName3.consumptionDate = null
+    state.compInfo.compNames.compName3.corpNum = null
+    state.compInfo.compNames.compName3.conflict1 = null
+    state.compInfo.compNames.compName3.conflict2 = null
+    state.compInfo.compNames.compName3.conflict3 = null
+    state.compInfo.compNames.compName3.conflict1_num = null
+    state.compInfo.compNames.compName3.conflict2_num = null
+    state.compInfo.compNames.compName3.conflict3_num = null
+    state.compInfo.compNames.compName3.decision_text = null
 
-  /** Username of the current user */
-  const userId = ref('someone@idir')
+    // clear current name choice, to be reset by new data below
+    state.currentNameObj = null
+    state.currentName = null
+    state.currentChoice = null
 
-  const priority = ref(true)
-  const is_complete = computed(() =>
-    [
-      Status.Approved,
-      Status.Rejected,
-      Status.Conditional,
-      Status.Consumed,
-      Status.Completed,
-      Status.Cancelled,
-      Status.Historical,
-      Status.Expired,
-    ].includes(nr_status.value)
+    for ( let record of dbcompanyInfo.names ) {
+
+      switch (record.choice) {
+        case 1:
+          state.compInfo.compNames.compName1.choice = record.choice
+          state.compInfo.compNames.compName1.name = record.name
+          state.compInfo.compNames.compName1.state = record.state
+          state.compInfo.compNames.compName1.consumptionDate = record.consumptionDate
+          state.compInfo.compNames.compName1.corpNum = record.corpNum
+          state.compInfo.compNames.compName1.conflict1 = record.conflict1
+          state.compInfo.compNames.compName1.conflict2 = record.conflict2
+          state.compInfo.compNames.compName1.conflict3 = record.conflict3
+          state.compInfo.compNames.compName1.conflict1_num = record.conflict1_num
+          state.compInfo.compNames.compName1.conflict2_num = record.conflict2_num
+          state.compInfo.compNames.compName1.conflict3_num = record.conflict3_num
+          state.compInfo.compNames.compName1.decision_text = record.decision_text
+          state.compInfo.compNames.compName1.comment = record.comment
+
+          // if this name is not yet examined or it is approved (in case of reset/re-open), set it as current name
+          if ( record.state == 'NE' || record.state == 'APPROVED' || record.state == 'CONDITION' ) {
+
+            this.dispatch( 'setCurrentName', record )
+          }
+
+          break
+        case 2:
+          state.compInfo.compNames.compName2.choice = record.choice
+          state.compInfo.compNames.compName2.name = record.name
+          state.compInfo.compNames.compName2.state = record.state
+          state.compInfo.compNames.compName2.consumptionDate = record.consumptionDate
+          state.compInfo.compNames.compName2.corpNum = record.corpNum
+          state.compInfo.compNames.compName2.conflict1 = record.conflict1
+          state.compInfo.compNames.compName2.conflict2 = record.conflict2
+          state.compInfo.compNames.compName2.conflict3 = record.conflict3
+          state.compInfo.compNames.compName2.conflict1_num = record.conflict1_num
+          state.compInfo.compNames.compName2.conflict2_num = record.conflict2_num
+          state.compInfo.compNames.compName2.conflict3_num = record.conflict3_num
+          state.compInfo.compNames.compName2.decision_text = record.decision_text
+          state.compInfo.compNames.compName2.comment = record.comment
+
+          // if this name is not yet examined or it is approved (in case of reset/re-open), set it as current name
+          if ( ( record.state == 'NE' || record.state == 'APPROVED' || record.state == 'CONDITION' ) &&
+            ( record.choice < state.currentChoice || state.currentChoice == null ) )
+          {
+
+            this.dispatch( 'setCurrentName', record )
+          }
+
+          break
+        case 3:
+          state.compInfo.compNames.compName3.choice = record.choice
+          state.compInfo.compNames.compName3.name = record.name
+          state.compInfo.compNames.compName3.state = record.state
+          state.compInfo.compNames.compName3.consumptionDate = record.consumptionDate
+          state.compInfo.compNames.compName3.corpNum = record.corpNum
+          state.compInfo.compNames.compName3.conflict1 = record.conflict1
+          state.compInfo.compNames.compName3.conflict2 = record.conflict2
+          state.compInfo.compNames.compName3.conflict3 = record.conflict3
+          state.compInfo.compNames.compName3.conflict1_num = record.conflict1_num
+          state.compInfo.compNames.compName3.conflict2_num = record.conflict2_num
+          state.compInfo.compNames.compName3.conflict3_num = record.conflict3_num
+          state.compInfo.compNames.compName3.decision_text = record.decision_text
+          state.compInfo.compNames.compName3.comment = record.comment
+
+          // if this name is not yet examined or it is approved (in case of reset/re-open), set it as current name
+          if ( ( record.state == 'NE' || record.state == 'APPROVED' || record.state == 'CONDITION' ) &&
+            ( record.choice < state.currentChoice || state.currentChoice == null ) )
+          {
+            this.dispatch( 'setCurrentName', record )
+          }
+          break
+
+        default:
+          break
+      }
+    }
+
+    //if no currentName selected choose 1st
+    if ( state.currentName == null ) {
+
+      this.dispatch( 'setCurrentName', dbcompanyInfo.names[0] )
+    }
+
+    state.currentState = dbcompanyInfo.state
+    state.previousStateCd = dbcompanyInfo.previousStateCd
+    state.compInfo.requestType = dbcompanyInfo.requestTypeCd
+    state.compInfo.entityTypeCd = dbcompanyInfo.entity_type_cd
+    state.compInfo.requestActionCd = dbcompanyInfo.request_action_cd
+
+    if (dbcompanyInfo.consent_dt && moment(dbcompanyInfo.consent_dt).isValid()) {
+      let dateString = new moment(dbcompanyInfo.consent_dt).format('YYYY-MM-DD')
+      state.consentDateForEdit = dateString
+    }
+
+    // if the current state is not INPROGRESS, HOLD, or DRAFT clear any existing name record in currentNameObj
+    if ( !['INPROGRESS', 'HOLD', 'DRAFT'].includes( state.currentState ) ) {
+
+      this.dispatch( 'setCurrentName', {} )
+    }
+
+    // we keep the original data so that if fields exist that we do not use, we don't lose that
+    // data when we put new data
+    if ( dbcompanyInfo.applicants != '' ) {
+      state.applicantOrigData = dbcompanyInfo.applicants
+    }
+    else {
+      state.applicantOrigData = {
+        'clientFirstName': null,
+        'clientLastName': null,
+        'firstName': null,
+        'middleName': null,
+        'lastName': null,
+        'addrLine1': null,
+        'addrLine2': null,
+        'addrLine3': null,
+        'city': null,
+        'stateProvinceCd': null,
+        'postalCd': null,
+        'countryTypeCd': null,
+        'contact': null,
+        'phoneNumber': null,
+        'emailAddress': null,
+        'faxNumber': null,
+      }
+    }
+    state.applicantInfo.clientName.firstName = dbcompanyInfo.applicants.clientFirstName
+    state.applicantInfo.clientName.lastName = dbcompanyInfo.applicants.clientLastName
+    state.applicantInfo.applicantName.firstName = dbcompanyInfo.applicants.firstName
+    state.applicantInfo.applicantName.middleName = dbcompanyInfo.applicants.middleName
+    state.applicantInfo.applicantName.lastName = dbcompanyInfo.applicants.lastName
+    state.applicantInfo.contactInfo.addressLine1 = dbcompanyInfo.applicants.addrLine1
+    state.applicantInfo.contactInfo.addressLine2 = dbcompanyInfo.applicants.addrLine2
+    state.applicantInfo.contactInfo.addressLine3 = dbcompanyInfo.applicants.addrLine3
+    state.applicantInfo.contactInfo.city = dbcompanyInfo.applicants.city
+    state.applicantInfo.contactInfo.province = dbcompanyInfo.applicants.stateProvinceCd
+    state.applicantInfo.contactInfo.postalCode = dbcompanyInfo.applicants.postalCd
+    state.applicantInfo.contactInfo.country = dbcompanyInfo.applicants.countryTypeCd
+    state.applicantInfo.contactInfo.contactName = dbcompanyInfo.applicants.contact
+    state.applicantInfo.contactInfo.phone = dbcompanyInfo.applicants.phoneNumber
+    state.applicantInfo.contactInfo.email = dbcompanyInfo.applicants.emailAddress
+    state.applicantInfo.contactInfo.fax = dbcompanyInfo.applicants.faxNumber
+
+    state.additionalCompInfo.jurisdiction = dbcompanyInfo.xproJurisdiction
+    state.additionalCompInfo.natureOfBussiness = dbcompanyInfo.natureBusinessInfo
+    //state.details = dbcompanyInfo.details
+    state.additionalInfo = dbcompanyInfo.additionalInfo
+    state.internalComments = dbcompanyInfo.comments
+
+    state.additionalCompInfo.nr_status = dbcompanyInfo.state
+    state.examiner = dbcompanyInfo.userId
+    state.priority = dbcompanyInfo.priorityCd
+    //state.reservationCount = dbcompanyInfo.reservationCount
+
+    if ( dbcompanyInfo.expirationDate && moment( dbcompanyInfo.expirationDate ).isValid() ) {
+      state.expiryDate = moment( dbcompanyInfo.expirationDate ).format( 'YYYY-MM-DD' )
+    }
+    else {
+      state.expiryDate = null
+    }
+
+    if ( dbcompanyInfo.submittedDate && moment( dbcompanyInfo.submittedDate )
+    .isValid() )
+    {
+      state.submittedDate = moment( dbcompanyInfo.submittedDate )
+      .format( 'YYYY-MM-DD, h:mma' )
+    }
+    else {
+      state.submittedDate = null
+    }
+
+    state.lastUpdate = dbcompanyInfo.lastUpdate
+
+    state.submitCount = dbcompanyInfo.submitCount
+    state.previousNr = dbcompanyInfo.previousNr
+    state.corpNum = dbcompanyInfo.corpNum
+    state.furnished = dbcompanyInfo.furnished
+    state.hasBeenReset = dbcompanyInfo.hasBeenReset
+
+    // cycle through nwpta entries
+    // - first clear existing nwpta data that may persist from previous NR
+    state.additionalCompInfo.nwpta_ab = {
+      partnerJurisdictionTypeCd: null,
+      partnerName: null,
+      partnerNameDate: null,
+      partnerNameNumber: null,
+      partnerNameTypeCd: null,
+    }
+    state.additionalCompInfo.nwpta_sk = {
+      partnerJurisdictionTypeCd: null,
+      partnerName: null,
+      partnerNameDate: null,
+      partnerNameNumber: null,
+      partnerNameTypeCd: null,
+    }
+    for ( let record of dbcompanyInfo.nwpta ) {
+
+      // convert date from long form to YYYY-MM-DD
+      if ( record.partnerNameDate ) {
+        var nwpta_date = new moment( record.partnerNameDate )
+        record.partnerNameDate = nwpta_date.clone()
+                                           .format( 'YYYY-MM-DD' )
+      }
+
+      if ( record.partnerJurisdictionTypeCd == 'AB' ) state.additionalCompInfo.nwpta_ab = record
+      if ( record.partnerJurisdictionTypeCd == 'SK' ) state.additionalCompInfo.nwpta_sk = record
+    }
+
+    // convert Expiry Date from timestamp to YYYY-MM-DD string for editing
+    if ( state.expiryDate ) {
+      state.expiryDateForEdit = state.expiryDate
+    }
+    else {
+      state.expiryDateForEdit = null
+    }
+    if ( state.currentState === 'INPROGRESS' ) {
+      state.is_making_decision = true
+    }
+
+    // load payment data
+    this.dispatch('getPayments', null)
+  }  
+  
+  //**  END LOADCOMPANYINFO  **
+
+  const priority = computed(() => {
+      return state.priority
+  })
+  
+  const inProgress = computed(() => {
+      // set flag indicating whether you own this NR and it's in progress
+      if ( state.currentState == 'INPROGRESS' && state.examiner == state.userId ) {
+          return true
+      } else {
+          return false
+      }
+  })
+  
+  const is_complete = computed(() => {
+      // indicates a complete NR
+      if (['APPROVED', 'REJECTED', 'CONDITIONAL', 'CONSUMED', 'COMPLETED', 'CANCELLED', 'HISTORICAL', 'EXPIRED'].indexOf(
+        state.currentState ) >= 0 )
+      {
+          return true
+      }
+      else {
+          return false
+      }
+  })  
+  
+  //*
+  const furnished = ref<'Y' | 'N'>('N')
+  
+  const exactMatchesConflicts = ref<Array<ConflictListItem>>([])  
+      
+  async function getConflictInfo(item: ConflictListItem) {
+      corpConflictJSON.value = undefined
+      namesConflictJSON.value = undefined
+      const conflict = conflicts.value.filter(
+        (conflict) => conflict.nrNumber === item.nrNumber
+      )[0]
+      if (item.source === 'CORP') {
+        corpConflictJSON.value = conflict as CorpConflict
+      } else {
+        namesConflictJSON.value = conflict as NameRequestConflict
+      }
+  }
+  // computed<Array<ConflictList>> 
+  const parsedCOBRSConflicts = computed <Array<ConflictList>>([])
+  /*
+  function parsedSynonymConflicts() { 
+  	//output.push( { count: 0, highlightedText: 'Exact Word Order + Synonym Match', class: 'conflict-heading' } )
+      if ( ConflictList.length > 0 ) {
+          //output.push( ...ConflictList )
+          parsedSynonymConflicts = ConflictList
+      } else {
+          //output.push( { highlightedText: 'No Match', class: 'conflict-no-match' } )
+          parsedSynonymConflicts = null
+      }
+  }   
+  */
+  
+  const parsedCOBRSConflicts = computed <Array<ConflictList>>([])
+  /*
+  function parsedCOBRSConflicts() {
+      // output.push( { count: 0, highlightedText: 'Character Swap Match', class: 'conflict-heading' } )
+      if ( ConflictList.length > 0 ) {
+          //output.push( ...state.parsedCOBRSConflicts )
+          parsedCOBRSConflicts = ConflictList
+      } else {
+          //output.push( { highlightedText: 'No Match', class: 'conflict-no-match' } )
+          parsedCOBRSConflicts = null
+      }
+  }
+  */
+
+  const parsedPhoneticConflicts = computed <Array<ConflictList>>([])
+  /*
+  function parsedPhoneticConflicts = ref<Array<ConflictList>>(
+      // output.push( { count: 0, highlightedText: 'Phonetic Match (experimental)', class: 'conflict-heading' } )
+      if ( ConflictList.length > 0 ) {
+          //output.push( ...state.parsedPhoneticConflicts )
+          parsedPhoneticConflicts = ConflictList
+      } else {
+          //output.push( { highlightedText: 'No Match', class: 'conflict-no-match' } )
+          parsedPhoneticConflicts = null         
+      } 
   )
-  const examiner = ref('someone@idir')
-
-  const exactMatchesConflicts = ref<Array<ConflictListItem>>([])
-  const parsedSynonymConflicts = ref<Array<ConflictList>>(
-    mock.parsedSynonymConflicts as Array<ConflictList>
+  */
+  const decisionFunctionalityDisabled = computed <boolean> (
+    () =>    
+      
   )
-  const parsedCOBRSConflicts = ref<Array<ConflictList>>([])
-  const parsedPhoneticConflicts = ref<Array<ConflictList>>([])
-
-  const decisionFunctionalityDisabled = ref(false)
-
-  const conflictsAutoAdd = ref(true)
-  const autoAddDisabled = computed(
+  const conflictsAutoAdd = ref(0)
+   
+  const autoAddDisabled = computed (
     () =>
       decisionFunctionalityDisabled.value ||
       selectedConflicts.value.length > 0 ||
       comparedConflicts.value.length > 0
-  )
-
-  const comments = ref<Array<Comment>>(mock.comments)
-  const internalComments = ref<Array<Comment>>(mock.comments)
-
-  const conflicts = ref<Array<Conflict>>(mock.conflicts as Array<Conflict>)
-
+  ) 
+  
+  ///const comments = ref<Array<Comment>>(mock.comments)  
+  const comments = computed <Array<Comment>> (() => {
+      return state.Comment
+  })
+   
+  ///const conflicts = ref<Array<Conflict>>()
+  const conflicts = computed <Array<Conflict>> (() => {   
+        return state.Conflict
+  })
+  
   const corpConflictJSON = ref<CorpConflict>()
   const namesConflictJSON = ref<NameRequestConflict>()
-
+  
+  //cwu//  selectedConflicts: state => state.selectedConflicts
   const selectedConflicts = ref<Array<ConflictListItem>>([])
+  
+  //cwu//  comparedConflicts: state => state.comparedConflicts
   const comparedConflicts = ref<Array<Conflict>>([])
 
-  const listDecisionReasons = ref<Array<Macro>>(mock.macros)
-
-  const trademarksJSON = ref<TrademarkApiResponse>(mock.trademarkJSON)
+  const listDecisionReasons = computed(() => {
+      return state.listDecisionReasons
+  })
+  
+  const trademarksJSON = computed(() => {
+      return state.trademarksJSON
+  })
+  
+  //  const nr_status = ref(Status.InProgress)
+  const nr_status = computed(() => {
+      return state.additionalCompInfo.nr_status
+  })
 
   const is_editing = ref(false)
   const is_making_decision = ref(true)
   const is_header_shown = ref(false)
-  const nrNumber = ref('NR 1234567')
-  const nr_status = ref(Status.InProgress)
+  const nrNumber = ref()
   const isClosed = computed(() =>
     [
       Status.Rejected,
@@ -99,11 +435,17 @@ export const useExamineStore = defineStore('examine', () => {
       Status.Consumed,
     ].includes(nr_status.value)
   )
-  const previousStateCd = ref<Status>()
+  
+  const previousStateCd = ref<Status>()  
   const listRequestTypes = ref<Array<RequestType>>(
     requestTypes as Array<RequestType>
   )
+  
   const requestType = ref<RequestTypeCode>(RequestTypeCode.CP)
+  //  const requestType = computed(() => {
+  //    return state.compInfo.requestType
+  //  }  
+  
   const requestTypeObject = computed(
     () => listRequestTypes.value.find((r) => r.value == requestType.value)!
   )
@@ -111,9 +453,16 @@ export const useExamineStore = defineStore('examine', () => {
     requestTypeRulesJSON as Array<RequestTypeRule>
   )
 
+  // const requestActionCd = computed(() => {
+  //    return state.compInfo.requestActionCd
+  //  }  
   const requestActionCd = computed<RequestActionCode>(
     () => requestTypeObject.value.request_action_cd
   )
+  
+  //const entityTypeCd = computed(() => {
+  //  return state.compInfo.entityTypeCd
+  //}    
   const entityTypeCd = computed<EntityTypeCode>(
     () => requestTypeObject.value.entity_type_cd
   )
@@ -122,21 +471,45 @@ export const useExamineStore = defineStore('examine', () => {
     restricted_words_conditions: [
       { cnd_info: [{ allow_use: 'N', consent_required: '' }] },
     ],
-  })
+  })  
 
-  const parseConditions = ref<Array<Condition>>(
-    mock.parseConditions as Array<Condition>
-  )
+  const parseConditions = computed(() => {
+    function parseBoolean(cond) {
+      if ( cond === 'Y' ) return true
+      if ( cond === 'N' ) return false
+      return ''
+    }
+ 
+    if ( state.conditionsJSON && state.conditionsJSON.restricted_words_conditions ) {
+      let output = []
+      for ( let restrictedWord of state.conditionsJSON.restricted_words_conditions ) {
+        for ( let conditionInfo of restrictedWord.cnd_info ) {
+          let object = {
+            ...conditionInfo,
+            consent_required_tf: parseBoolean( conditionInfo.consent_required ),
+            allow_use_tf: parseBoolean( conditionInfo.allow_use ),
+            phrase: restrictedWord.word_info.phrase,
+          }
+          output.push( object )
+        }
+      }
+      return output
+    }
+    return []
+  }  
 
   const trademarkInfo = ref({ names: [] })
-  const historiesJSON = ref<History>(mock.historiesJSON)
+
+  const historiesJSON = ref<History>()  
 
   const historiesInfoJSON = ref<NameRequestConflict>()
-
+   
   const consentRequiredByUser = ref(false)
 
+  //cwu//  selectedConditions: state => state.selectedConditions
   const selectedConditions = ref<Array<Condition>>([])
 
+  //cwu// customerMessageOverride: state => state.customerMessageOverride
   const customerMessageOverride = ref<string>()
 
   const decisionSelectionsDisabled = computed(
@@ -145,6 +518,7 @@ export const useExamineStore = defineStore('examine', () => {
 
   const selectedMacros = ref<Array<Macro>>([])
 
+  //cwu//   selectedTrademarks: state => state.selectedTrademarks,
   const selectedTrademarks = ref<Array<Trademark>>([])
 
   const conditionMessages = computed(() =>
@@ -194,9 +568,20 @@ export const useExamineStore = defineStore('examine', () => {
     }
   })
 
-  const acceptanceWillBeConditional = computed(
-    () => consentRequiredByUser.value
-  )
+  //const acceptanceWillBeConditional = computed(
+  //  () => consentRequiredByUser.value
+  //)
+
+  const acceptanceWillBeConditional: state => {
+    const noConsentRequiredConditions = ['PERSONAL REAL ESTATE CORPORATION', 'PERSONAL REAL ESTATE', 'PERSONAL REAL']
+    let checkConditions = () => {
+      if (state.selectedConditions && Array.isArray(state.selectedConditions) ) {
+        return (state.selectedConditions.some(condition => condition.consent_required) && !(noConsentRequiredConditions.includes(state.selectedConditions[0].phrase)))
+      }
+      return false
+    }
+    return state.consentRequiredByUser || checkConditions() || false
+  }
 
   const decision_made = ref<Status>()
 
@@ -205,45 +590,157 @@ export const useExamineStore = defineStore('examine', () => {
   const compName3 = reactive<NameChoice>(mock.compName3 as NameChoice)
   const nameChoices = computed(() => [compName1, compName2, compName3])
 
-  const currentNameObj = ref(compName2)
+  const currentNameObj = ref()
   const currentName = computed(() => currentNameObj.value.name)
   const currentChoice = computed(() => currentNameObj.value.choice)
 
-  const userHasApproverRole = ref(true)
-  const userHasEditRole = ref(true)
-  const is_my_current_nr = computed(
-    () =>
-      nr_status.value === Status.InProgress && userId.value === examiner.value
-  )
+  ///const userHasApproverRole = ref(true)
+  function userHasApproverRole = computed(() => {
+    let roles = state.user_roles
+    return roles.includes( 'names_approver' )
+  })
+ 
+  ///const userHasEditRole = ref(true)
+  function userHasEditRole = computed(() => {
+      let roles = state.user_roles
+      return roles.includes( 'names_approver' ) || roles.includes( 'names_editor' )
+  }) 
+  
+  ///const is_my_current_nr = computed(
+  //  () =>
+  //    nr_status.value === Status.InProgress && userId.value === examiner.value
+  //)
+  function is_my_current_nr = computed(() => {
+      // set flag indicating whether you own this NR and it's in progress
+      if ( state.currentState == 'INPROGRESS' && state.examiner == state.userId ) {
+        return true
+      }
+      else {
+        return false
+      }
+  })
+  
   const furnished = ref<'Y' | 'N'>('N')
 
   const listJurisdictions = ref<Array<Jurisdiction>>(jurisdictionsData)
+  
+  ///const jurisdiction = computed(() => {
+  //    return state.additionalCompInfo.jurisdiction
+  //}
   const jurisdiction = ref<string>()
+  
+  ///const jurisdictionNumber = computed(() => {
+  //    return state.nrData.homeJurisNum
+  //}
   const jurisdictionNumber = ref<string>()
+  
   const jurisdictionRequired = ref(false)
 
   const previousNr = ref<string>()
   const prevNrRequired = ref(false)
 
-  const consumptionDate = ref<string>()
-  const consumedBy = ref<string>()
+  ///const consumptionDate = ref<string>()
+  function consumptionDate = computed(() => {
+    /* Find the consumption date for the request from the individual name consumption date.
+     */
+    var thedate = null
+    if ( state.compInfo.compNames.compName1.consumptionDate != null ) {
+      thedate = state.compInfo.compNames.compName1.consumptionDate
+    }
+    else if ( state.compInfo.compNames.compName2.consumptionDate != null ) {
+      thedate = state.compInfo.compNames.compName2.consumptionDate
+    }
+    else {
+      thedate = state.compInfo.compNames.compName3.consumptionDate
+    }
+
+    if ( thedate != null ) {
+      return thedate
+    }
+    return null
+  })
+  
+  ///const consumedBy = ref<string>()  
+  function consumedBy = computed(() => {
+    let consumedBy = ''
+    // Note: consumptionDate checks were added as NRs from Society include corpNum even when the NR hasn't been
+    // consumed yet.  This was causing consumed by field to be populated and caused confusion for examiners.
+    if ( state.compInfo.compNames.compName1.corpNum != null &&
+         !!state.compInfo.compNames.compName1.consumptionDate) {
+      consumedBy = state.compInfo.compNames.compName1.corpNum
+    }
+    else if ( state.compInfo.compNames.compName2.corpNum != null &&
+              !!state.compInfo.compNames.compName2.consumptionDate) {
+      consumedBy = state.compInfo.compNames.compName2.corpNum
+    }
+    else {
+      if ( !!state.compInfo.compNames.compName3.consumptionDate ) {
+        consumedBy = state.compInfo.compNames.compName3.corpNum
+      }
+    }
+    return consumedBy
+  })
+   
   const consentDateForEdit = ref<string>()
+  
   const consentFlag = ref<ConsentFlag>()
 
   const pendingTransactionRequest = ref(false)
+  
   const transactionsData = ref<Array<Transaction>>()
 
-  const refundPaymentState = ref<RefundState>()
+  ///const refundPaymentState = ref<RefundState>()  
+  refundPaymentState(state, getters) {
+    console.log('getters paymentsData' + state.paymentsData)
+    if (state.paymentsData && state.paymentsData.length > 0) {
+      if (state.paymentsData.length == 1) {
+        return getters.refundState
+      }else {
+        // More than 1 payment. (e.g. paid priority service)
+        if (!getters.isDifferentPaymentStatus) {
+          // all payments have the same status
+          return getters.refundState
+        } else {
+          // the payments have the different status (.e.g one REFUNDED and another one REFUND_REQUESTED)
+          if (!getters.isNoRefund) {
+            // Multi-transaction scenario returns success
+            return 'Refund Request Processed'
+          } else {
+            // This should not happen
+            return 'Refund Not Processed'
+          }
+        }
+      }
 
-  const submittedDate = ref('2008-09-16, 4:44pm')
+      return state.paymentsData[0].sbcPayment.statusCode
+    }
+
+    return null
+  }  
+
+  ///const submittedDate = ref('2008-09-16, 4:44pm')
+  const submittedDate = computed(() => {
+    if ( state.submittedDate ) return state.submittedDate
+    return null
+  }
+    
   const corpNum = ref<string>()
   const corpNumRequired = ref(false)
-  const expiryDate = ref<string>()
+  
+  ///const expiryDate = ref<string>()
+  const expiryDate = computed(() => {
+    if ( state.expiryDate ) {
+      return state.expiryDate
+    }
+    return null
+  } 
+  
+ ////*** These value get filled by the loadCompanyInfo function
 
-  const additionalInfo = ref(mock.additionalInfo)
+
+  const additionalInfo = ref(additionalInfo)
   const additional_info_template = ref<string>()
   const natureOfBusiness = ref(mock.natureOfBusiness)
-
   const clientFirstName = ref(mock.clientFirstName)
   const clientLastName = ref(mock.clientLastName)
   const firstName = ref(mock.firstName)
@@ -260,7 +757,9 @@ export const useExamineStore = defineStore('examine', () => {
   const fax = ref(mock.fax)
   const conEmail = ref(mock.conEmail)
   const contactName = ref(mock.contactName)
-
+  
+ ////*** 
+  
   const forceConditional = ref(false)
 
   const hasBeenReset = ref(false)
@@ -330,7 +829,7 @@ export const useExamineStore = defineStore('examine', () => {
      * This function is called before saving. A save will not occur if at least one edit action's validation fails.
      */
     validate: (() => boolean) | (() => Promise<boolean>)
-    /** Update the store's value with the new values. This function is called after all validations have succeeded. */
+    /** Update the store's value with the new values. This function is called after all validations have succeeded */
     update: () => void
     /** Called when the user cancels an edit. */
     cancel: () => void
@@ -377,9 +876,26 @@ export const useExamineStore = defineStore('examine', () => {
     }
   }
 
-  function getShortJurisdiction(jurisdiction: string) {
-    return jurisdiction
+  ///function getShortJurisdiction(jurisdiction: string) {
+  //  return jurisdiction
+  //}
+  function getShortJurisdiction: state => jurisdiction => {
+    jurisdiction = jurisdiction.toUpperCase()
+    if ( jurisdiction.length === 2 ) return jurisdiction
+
+    let index
+    let textIndex = state.listJurisdictions.findIndex(opt => opt.text === jurisdiction)
+    if ( textIndex >= 0 ) index = textIndex
+    let shortIndex = state.listJurisdictions.findIndex(opt => opt.SHORT_DESC === jurisdiction)
+    if ( shortIndex >= 0 ) index = shortIndex
+
+    if ( typeof index === 'number' ) {
+      return state.listJurisdictions[index].value
+    }
+
+    return '?'
   }
+  
 
   function setConsentFlag(flag: ConsentFlag | undefined) {
     consentFlag.value = flag
@@ -526,9 +1042,36 @@ export const useExamineStore = defineStore('examine', () => {
     }
   }
 
+  /** Attempt to set the given name choice as the current one. Will throw an error if the choice cannot be examined. */
+  async function setCurrentNameChoice(choice: NameChoice) {
+    if (!choice.state || choice.state !== 'NE') {
+      throw new Error(`Name choice ${choice.choice} cannot be examined`)
+    } else {
+      currentNameObj.value = choice
+    }
+  }
+
+  /** Attempts to examine the next name choice in the name request. */
+  async function examineNextNameChoice() {
+    const attempt = async (choice: NameChoice) => {
+      try {
+        await setCurrentNameChoice(choice)
+      } catch (e) {
+        await updateNRState(Status.Rejected)
+      }
+    }
+    if (currentChoice.value === 1) {
+      await attempt(compName2)
+    } else if (currentChoice.value === 2) {
+      await attempt(compName3)
+    } else {
+      await updateNRState(Status.Rejected)
+    }
+  }
+
   /** Send name request decision to API */
   async function pushAcceptReject() {
-    // TODO: make a PUT call to api
+    //  /// TODO: make a PUT call to api
   }
 
   function runManualRecipe(searchStr: string, exactPhrase: string) {}
@@ -597,9 +1140,10 @@ export const useExamineStore = defineStore('examine', () => {
   }
 
   async function updateRequest() {
+    ///todo
     console.log('updating request')
   }
-
+  
   /** Runs all edit actions, ensuring all actions have valid internal state before updating the store state.
    * @returns whether all the actions ran successfully
    */
@@ -639,10 +1183,14 @@ export const useExamineStore = defineStore('examine', () => {
     jurisdictionRequired.value = Boolean(rules?.jurisdiction_required)
   }
 
-  async function getpostgrescompNo() {}
+  async function getpostgrescompNo() {
+    /// todo
+  }
 
   // TODO: should this be the $reset method for this store?
-  async function resetValues() {}
+  async function resetValues() {
+    ///todo
+  }
 
   function resetConflictList() {}
 
@@ -652,6 +1200,7 @@ export const useExamineStore = defineStore('examine', () => {
     resetConflictList()
   }
 
+  ///  editMessageModalVisible: state => state.editMessageModalVisible
   async function edit() {
     // if this isn't the user's INPROGRESS, make it that
     if (!is_my_current_nr.value && !isClosed.value) {
@@ -731,18 +1280,6 @@ export const useExamineStore = defineStore('examine', () => {
     // TODO: push CANCELLED state to API
   }
 
-  // ============ ADDED 2024-01-17, also see EditAction interface ============
-  async function cancelEdits() {
-    if (previousStateCd.value === Status.Draft) {
-      await revertToPreviousState()
-    } else {
-      await getpostgrescompInfo(nrNumber.value)
-    }
-    is_editing.value = false
-    is_header_shown.value = false
-    editActions.forEach((ea) => ea.cancel())
-  }
-
   watch(
     () => [selectedConflicts],
     (_state) => {
@@ -767,7 +1304,7 @@ export const useExamineStore = defineStore('examine', () => {
     { deep: true }
   )
 
-  return {
+ return {
     priority,
     is_complete,
     conflictsAutoAdd,
@@ -776,7 +1313,6 @@ export const useExamineStore = defineStore('examine', () => {
     examiner,
     trademarksJSON,
     selectedConflicts,
-
     internalComments,
     isClosed,
     is_editing,
@@ -887,7 +1423,6 @@ export const useExamineStore = defineStore('examine', () => {
     updateNRStatePreviousState,
     revertToPreviousState,
     saveEdits,
-    cancelEdits,
     updateRequestTypeRules,
     getpostgrescompNo,
     resetValues,
@@ -901,8 +1436,13 @@ export const useExamineStore = defineStore('examine', () => {
     postComment,
     cancelNr,
   }
-})
+})  
 
 if (import.meta.hot) {
   import.meta.hot.accept(acceptHMRUpdate(useExamineStore, import.meta.hot))
 }
+
+
+
+
+  
